@@ -1,0 +1,5 @@
+[
+	{ "name": "john", "image": "nehe.gif", "x": 0, "y": 0, "width": 256, "height": 256},
+	{ "name": "cat", "image": "nehe.gif", "x": 50, "y": 50, "width": 64, "height": 64 },
+	{ "name": "spider", "image": "nehe.gif", "x": -50, "y": -50, "width": 15, "height": 15 }
+]

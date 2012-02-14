@@ -1,0 +1,45 @@
+html, body {
+	margin: 0;
+	padding: 0;
+	width: 100%;
+	height: 100%;
+}
+
+body {
+	background: #4D4D4D;
+}
+
+a {
+	text-decoration:none;
+	color: black;
+}
+
+#content {
+	margin: 0px auto;
+	width: 856px;
+	height: 100%;
+	background: #2A2A2A;
+}
+
+#banner {
+	width: 100%;
+	height: 200px;
+	background: #4D4D4D;
+	font: bold 100pt arial;
+}
+
+#menu {
+	width: 100%;
+	height: 40px;
+	background: black;
+}
+
+.tab {
+	width: 10%;
+	height: 100%;
+	background: white;
+}
+
+#border {
+	border: solid 1px yellow;
+}

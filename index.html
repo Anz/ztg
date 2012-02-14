@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+		<link rel="stylesheet" type="text/css" href="stylesheet.css" />
+		<script language="JavaScript" src="js/prototype.js"/></script>
+		<script language="JavaScript" src="js/graphic.js"></script>
+		<script language="JavaScript" src="js/engine.js"></script>
+		<script language="JavaScript" src="js/menu.js"></script>
+    </head>
+    <body onload="init()" style="margin:0;padding:0;height:100%;">
+		<div id="content">
+			<div id="banner">ZTG</div>
+			<div id="menu">
+				<a class="tab" onclick="menu_game();">GAME</a>
+				<a class="tab" onclick="menu_map();">MAP</a>
+				<a class="tab" onclick="menu_model();">MODEL</a>
+			</div>
+			<div id="border">
+				<canvas id="canvas" width="854px" height="480px"></canvas>
+			</div>
+		</div>
+    </body>
+</html>
