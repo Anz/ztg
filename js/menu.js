@@ -27,17 +27,17 @@ function menu_model() {
 	
 	var frame_per_line = 3;
 	var framesize = 128;
-	var framespace = 30;
-	var linewidth = frame_per_line*framesize + (frame_per_line-1)*framespace;
+	var framespace = 128 + 30;
+	//var linewidth = frame_per_line*framesize + (frame_per_line-1)*framespace;
 
 	for (var i=0; i<models.length; i++) {
 		var model = models[i];
 		
-		var x = i % frame_per_line;
+		var x = (i % frame_per_line) - Math.floor(frame_per_line / 2);
 		var y = Math.floor(i / frame_per_line);
 		
-		model.y = -y * (framesize+framespace);		
-		model.x = (x * (framesize+framespace) - linewidth / 2) * Math.max(1, 1-Math.abs(model.y)/480);		
+		model.y = -y * framespace;		
+		model.x = /*(x * (framesize+framespace) - linewidth / 2)*/ x * framespace * Math.max(1, 1-Math.abs(model.y)/480);		
 		model.size = Math.min(framesize / model.texture.width, framesize / model.texture.height);
 	}
 	

@@ -43,9 +43,11 @@ function graphinc_draw(camera, entities) {
 	
 	// render grid
 	var color = { "r":0.5,"g":0.5,"b":0.5,"a":1};
-	graphic_render_mesh(small_grid, color, textureWhite, camera.x % 10, camera.y % 10, 1, 1);
+	graphic_render_mesh(small_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
+	//graphic_render_mesh(small_grid, color, textureWhite, -camera.x, -camera.y, 1, 1);
 	var color = { "r":0.6,"g":0.6,"b":0.6,"a":1};
-	graphic_render_mesh(big_grid, color, textureWhite, camera.x % 10, camera.y % 10, 1, 1);
+	graphic_render_mesh(big_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
+	//graphic_render_mesh(big_grid, color, textureWhite, -camera.x, -camera.y, 1, 1);
 	var color = { "r":1,"g":1,"b":0,"a":1};
 	graphic_render_mesh(xaxis, color, textureWhite, 0, -camera.y, 1, 1);
 	graphic_render_mesh(yaxis, color, textureWhite, -camera.x, 0, 1, 1);
@@ -105,8 +107,8 @@ function graphic_mesh_init() {
 	yaxis = graphic_mesh(gl.LINES, yaxis_vertices, null, yaxis_indices);
 	
 	// grid
-	var xlimit = width + 10 - (width % 10);
-	var ylimit = height + 10 - (height % 10);
+	var xlimit = width + 100 - (width % 100) + 100;
+	var ylimit = height + 100 - (height % 100) + 100;
 	
 	var small_grid_vertices = [];
 	var big_grid_vertices = [];
