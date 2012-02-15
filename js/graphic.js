@@ -2,9 +2,12 @@ var gl;
 var canvas;
 var program;
 
-var mesh = {};
+var sprite = {};
+var small_grid;
+var big_grid;
 
 var images = {};
+var textureWhite;
 
 function graphic_init() {
 	canvas = $('canvas');
@@ -19,7 +22,9 @@ function graphic_init() {
 	gl.viewport(0, 0, canvas.width, canvas.height);
 	gl.clearColor(0.3, 0.3, 0.3, 1.0);
 	
-	program = graphic_shader('file:///C:/workspace/prototype/shader/vertex.vs', 'shader/fragment.fs');
+	program = graphic_shader('shader/vertex.vs', 'shader/fragment.fs');
+	
+	textureWhite = graphic_texture_solid(255,255,255,255);
 	
 	graphic_mesh_init();
 }
@@ -33,63 +38,123 @@ function graphinc_draw(camera, entities) {
 	gl.enable(gl.TEXTURE_2D);
 	
 	graphic_load_projection();
+	
+	// render grid
+	var color = { "r":0.5,"g":0.5,"b":0.5,"a":1};
+	graphic_render_mesh(big_grid, color, textureWhite, camera.x % 10, camera.y % 10, 1, 1);
 		
 	for (var i=0; i<entities.length; i++) {
 		var entity = entities[i];
-		
-		var modelMatrix = [
-			entity.texture.width*entity.size, 0,   0,    0,
-			0,   entity.texture.height*entity.size, 0,    0,
-			0,   0,   1,  0,
-			entity.x-camera.x,   entity.y-camera.y,   0,    1
-		];
-		
-		gl.uniformMatrix4fv(program.modelMatrix, false, modelMatrix);
-		
-		gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertices);
-        gl.vertexAttribPointer(program.vertexPosition, 2, gl.FLOAT, false, 0, 0);
-
-        gl.bindBuffer(gl.ARRAY_BUFFER, mesh.texCoords);
-        gl.vertexAttribPointer(program.textureCoord, 2, gl.FLOAT, false, 0, 0);
-
-        gl.activeTexture(gl.TEXTURE0);
-        gl.bindTexture(gl.TEXTURE_2D, entity.texture);
-        gl.uniform1i(program.sampler, 0);
-
-        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices);		
-		
-		// draw the buffer
-		gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_SHORT, 0);
+		var color = { "r":1,"g":1,"b":1,"a":1};
+		graphic_render_mesh(sprite, color, entity.texture, entity.x-camera.x, entity.y-camera.y, entity.texture.width*entity.size, entity.texture.height*entity.size);
 	}	
 }
 
+function graphic_render_mesh(mesh, color, texture, x, y, width, height) {
+	var modelMatrix = [
+		width, 0,   0,    0,
+		0,   height, 0,    0,
+		0,   0,   1,  0,
+		x,   y,   0,    1
+	];
+	
+	gl.uniformMatrix4fv(program.modelMatrix, false, modelMatrix);
+	gl.uniform4f(program.color, color.r, color.g, color.b, color.a);
+	
+	gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertices);
+	gl.enableVertexAttribArray(program.vertexPosition);
+	gl.vertexAttribPointer(program.vertexPosition, 2, gl.FLOAT, false, 0, 0);
+
+	// texture
+	gl.bindBuffer(gl.ARRAY_BUFFER, mesh.texCoords);
+	gl.enableVertexAttribArray(program.textureCoord);
+	gl.vertexAttribPointer(program.textureCoord, 2, gl.FLOAT, false, 0, 0);
+
+	gl.activeTexture(gl.TEXTURE0);
+	gl.bindTexture(gl.TEXTURE_2D, texture);
+	gl.uniform1i(program.sampler, 0);
+
+	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
+	
+	// draw the buffer
+	gl.drawElements(mesh.type, mesh.num_indices, gl.UNSIGNED_SHORT, 0);
+}
+
 function graphic_mesh_init() {
+	var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
+	var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
+	var sprite_indices = [0, 1, 2, 2, 1, 3];
+	sprite = graphic_mesh(gl.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
+	
+	var width = canvas.width/2;
+	var height = canvas.height/2;
+	var xlimit = width + 10 - (width % 10);
+	var ylimit = height + 10 - (height % 10);
+	
+	var small_grid_vertices = [];
+	var big_grid_vertices = [];
+	
+	for (var i=-xlimit; i<=xlimit; i+=10) {
+		var grid_vertices;
+		if(Math.abs(i)  % 100 == 0) grid_vertices = big_grid_vertices;
+		else grid_vertices = small_grid_vertices;
+		
+ 		grid_vertices.push(i);
+		grid_vertices.push(-ylimit);		
+		grid_vertices.push(i);
+		grid_vertices.push(ylimit);
+	}
+	
+	for (var i=-ylimit; i<=ylimit; i+=10) {
+		var grid_vertices;
+		if (Math.abs(i) % 100 == 0) grid_vertices = big_grid_vertices;
+		else grid_vertices = small_grid_vertices;
+	
+		grid_vertices.push(-xlimit);
+		grid_vertices.push(i);		
+		grid_vertices.push(xlimit);
+		grid_vertices.push(i);
+	}
+	
+	var small_grid_indices = new Array(small_grid_vertices.length/2);
+	var big_grid_indices = new Array(big_grid_vertices.length/2);
+	
+	for (var i=0; i<small_grid_vertices.length/2; i++) {
+		small_grid_indices[i] = i;
+		if (i < big_grid_vertices.length/2)
+			big_grid_indices[i] = i;
+	}
+	
+	small_grid = graphic_mesh(gl.LINES, small_grid_vertices, null, small_grid_indices);
+	big_grid = graphic_mesh(gl.LINES, big_grid_vertices, null, big_grid_indices);
+}
+
+function graphic_mesh(type, vertices, textureCoords, indices) {
+	var mesh = {};
+	mesh.type = type;
+
+	// vertex
 	mesh.vertices = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertices);
-	var vertices = [
-		-0.5,  0.5, 
-		 0.5,  0.5,
-		-0.5, -0.5,
-		 0.5, -0.5
-	];
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+	
+	// texture coordinates
+	if (!textureCoords) {
+		textureCoords = new Array(vertices.length);
+	}
 	
 	mesh.texCoords = gl.createBuffer();
 	gl.bindBuffer(gl.ARRAY_BUFFER, mesh.texCoords);
-    var textureCoords = [
-		0.0, 1.0,
-		1.0, 1.0,
-		0.0, 0.0,
-		1.0, 0.0
-	];
 	gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoords), gl.STATIC_DRAW);
 	
+	// index
 	mesh.indices = gl.createBuffer();
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
-	var indices = [
-	   0, 1, 2, 2, 1, 3
-	];
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+	
+	mesh.num_indices = indices.length;
+	
+	return mesh;
 }
 
 function graphic_shader(vertexUrl, fragmentUrl) {
@@ -137,14 +202,11 @@ function graphic_shader(vertexUrl, fragmentUrl) {
 						}
 						gl.useProgram(program);
 						
-						program.vertexPosition = gl.getAttribLocation(program, "vertexPosition");
-						gl.enableVertexAttribArray(program.vertexPosition);
-						
-						program.textureCoord = gl.getAttribLocation(program, "textureCoord");
-						gl.enableVertexAttribArray(program.textureCoord);
-						
+						program.vertexPosition = gl.getAttribLocation(program, "vertexPosition");						
+						program.textureCoord = gl.getAttribLocation(program, "textureCoord");						
 						program.modelMatrix = gl.getUniformLocation(program, "modelMatrix");
 						program.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix");
+						program.color = gl.getUniformLocation(program, "uColor");
 						program.sampler = gl.getUniformLocation(program, "sampler");
 						
 					    gl.uniform1i(program.sampler, 0);
@@ -178,8 +240,8 @@ function graphic_texture(name) {
 		gl.bindTexture(gl.TEXTURE_2D, texture);
 		gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 		gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 		texture.width = texture.image.width;
 		texture.height = texture.image.height;
     }
@@ -188,6 +250,17 @@ function graphic_texture(name) {
 	
 	return texture;
 }
+
+function graphic_texture_solid(r, g, b, a) {
+    var data = new Uint8Array([r, g, b, a]);
+    var texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+    return texture;
+}
+
 
 function graphic_load_projection() {
 	var r = canvas.width/2.0;

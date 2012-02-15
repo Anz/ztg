@@ -41,10 +41,10 @@ function engine_main(map) {
 	var camera = {'x': 0, 'y': 0};
 	
 	if (entity) {
-		if (keys['87']) entity.y += 10;
-		if (keys['65']) entity.x -= 10;
-		if (keys['83']) entity.y -= 10;
-		if (keys['68']) entity.x += 10;
+		if (keys['87']) entity.y += 6;
+		if (keys['65']) entity.x -= 6;
+		if (keys['83']) entity.y -= 6;
+		if (keys['68']) entity.x += 6;
 		
 		camera.x = entity.x;
 		camera.y = entity.y;
