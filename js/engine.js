@@ -73,20 +73,28 @@ function engine_map(url) {
 			var file = JSON.parse(response.responseText);
 			
 			// load models
-			for (var key in file.models) {
-				var model = file.models[key];
+			for (var i=0; i<file.models.length; i++) {
+				var model = file.models[i];
 				model.texture = graphic_texture(model.image);
-				map.models[key] = model;
+				map.models.push(model);
 			}
 			
 			for (var i=0; i<file.entities.length; i++) {
 				var entity = file.entities[i];
 				entity.model = map.models[entity.modelref];
+				for (var j=0; j<file.models.length; j++) {
+					var model = file.models[j];
+					if (entity.modelref == model.name) {
+						entity.model = model;
+						break;
+					}
+				}
 				
 				if (!entity.x) entity.x = 0;
 				if (!entity.y) entity.y = 0;
 				if (!entity.size) entity.size = 1;
 				if (!entity.layer) entity.layer = 0;
+				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};
 				
 				map.entities.push(entity);
 			}

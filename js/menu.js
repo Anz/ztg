@@ -11,12 +11,6 @@ var entities = [];
 function menu_game() {
 	engine_resume(map.entities);
 	
-	for (var key in map.models) {
-		var model = map.models[key];
-		var entity = {"model":model};
-		entities.push(entity);
-	}
-	
 	editorRunning = false;
 }
 
@@ -31,8 +25,9 @@ function menu_editor() {
 	var framespace = 128 + 30;
 	//var linewidth = frame_per_line*framesize + (frame_per_line-1)*framespace;
 
-	for (var i=0; i<entities.length; i++) {
-		var entity = entities[i];
+	for (var i=0; i<map.models.length; i++) {
+		var model = map.models[i];
+		var entity = {"model":model};
 		
 		var x = (i % frame_per_line) - Math.floor(frame_per_line / 2);
 		var y = Math.floor(i / frame_per_line);
@@ -42,6 +37,16 @@ function menu_editor() {
 		entity.x = x * framespace * Math.max(1, 1-Math.abs(entity.y)/480);		
 		entity.size = Math.min(framesize / entity.model.texture.width, framesize / entity.model.texture.height);
 		entity.layer = 1;
+		entity.color = { "r":1,"g":1,"b":1,"a":1};
+		entities.push(entity);
+	}
+	
+	for (var i=0; i<map.entities.length; i++) {
+		var entity = map.entities[i];
+		entity.color.r *= 0.6;
+		entity.color.g *= 0.6;
+		entity.color.b *= 0.6;
+		//entity.color.a /= 2;
 	}
 	
 	document.addEventListener('DOMMouseScroll', function (event) {

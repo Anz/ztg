@@ -64,11 +64,10 @@ function graphinc_draw(camera, entities, grid) {
 		
 	for (var i=0; i<entities.length; i++) {
 		var entity = entities[i];
-		var color = { "r":1,"g":1,"b":1,"a":1};
 		
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		graphic_render_mesh(sprite, color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
+		graphic_render_mesh(sprite, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
 	}	
 }
 

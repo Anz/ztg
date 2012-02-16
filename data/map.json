@@ -1,16 +1,16 @@
 {
 	"entities": [
-		{ "name": "hero", "modelref": "hero", "x": 0, "y": 0, "layer": 1},
+		{ "name": "hero", "modelref": "hero", "x": 0, "y": 0, "layer": 0.5},
 		{ "name": "john", "modelref": "john1", "x": 0, "y": 0, "layer": 0},
 		{ "name": "john", "modelref": "john1", "x": 256, "y": 0, "layer": 0},
 		{ "name": "john", "modelref": "john1", "x": 512, "y": 0, "layer": 0},
 		{ "name": "john", "modelref": "john1", "x": 768, "y": 0, "layer": 0}
 	],
-	"models": {
-		"hero": { "image": "john.png"},
-		"john1": { "image": "level.png"},
-		"john2": { "image": "level.png"},
-		"john3": { "image": "level.png"},
-		"john4": { "image": "level.png"}
-	}
+	"models": [
+		{"name":"hero","image": "john.png"},
+		{"name":"john1", "image": "level.png"},
+		{"name":"john2", "image": "level.png"},
+		{"name":"john3", "image": "level.png"},
+		{"name":"john4", "image": "level.png"}
+	]
 }
