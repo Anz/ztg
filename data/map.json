@@ -1,5 +1,16 @@
-[
-	{ "name": "john", "image": "nehe.gif", "x": 0, "y": 0, "width": 256, "height": 256},
-	{ "name": "cat", "image": "nehe.gif", "x": 50, "y": 50, "width": 64, "height": 64 },
-	{ "name": "spider", "image": "nehe.gif", "x": -50, "y": -50, "width": 15, "height": 15 }
-]
+{
+	"entities": [
+		{ "name": "hero", "modelref": "hero", "x": 0, "y": 0, "layer": 1},
+		{ "name": "john", "modelref": "john1", "x": 0, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "john1", "x": 256, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "john1", "x": 512, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "john1", "x": 768, "y": 0, "layer": 0}
+	],
+	"models": {
+		"hero": { "image": "john.png"},
+		"john1": { "image": "level.png"},
+		"john2": { "image": "level.png"},
+		"john3": { "image": "level.png"},
+		"john4": { "image": "level.png"}
+	}
+}

@@ -31,31 +31,44 @@ function graphic_init() {
 	graphic_mesh_init();
 }
 
-function graphinc_draw(camera, entities) {
+function graphinc_draw(camera, entities, grid) {
 	if (!gl) {
 		graphic_init();
 	}
 
-	gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	
 	gl.enable(gl.TEXTURE_2D);
 	
 	graphic_load_projection();
 	
-	// render grid
-	var color = { "r":0.5,"g":0.5,"b":0.5,"a":1};
-	graphic_render_mesh(small_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
-	//graphic_render_mesh(small_grid, color, textureWhite, -camera.x, -camera.y, 1, 1);
-	var color = { "r":0.6,"g":0.6,"b":0.6,"a":1};
-	graphic_render_mesh(big_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
-	//graphic_render_mesh(big_grid, color, textureWhite, -camera.x, -camera.y, 1, 1);
-	var color = { "r":1,"g":1,"b":0,"a":1};
-	graphic_render_mesh(xaxis, color, textureWhite, 0, -camera.y, 1, 1);
-	graphic_render_mesh(yaxis, color, textureWhite, -camera.x, 0, 1, 1);
+	if (grid) {
+		gl.clearColor(0.3, 0.3, 0.3, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		// render grid
+		var color = { "r":0.5,"g":0.5,"b":0.5,"a":1};
+		graphic_render_mesh(small_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
+		var color = { "r":0.6,"g":0.6,"b":0.6,"a":1};
+		graphic_render_mesh(big_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
+		var color = { "r":1,"g":1,"b":0,"a":1};
+		graphic_render_mesh(xaxis, color, textureWhite, 0, -camera.y, 1, 1);
+		graphic_render_mesh(yaxis, color, textureWhite, -camera.x, 0, 1, 1);
+	} else{
+		gl.clearColor(0, 0, 0, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+	}
+	
+	entities.sort(
+		function (a, b) {
+			return a.layer - b.layer;
+		});
 		
 	for (var i=0; i<entities.length; i++) {
 		var entity = entities[i];
 		var color = { "r":1,"g":1,"b":1,"a":1};
-		graphic_render_mesh(sprite, color, entity.texture, entity.x-camera.x, entity.y-camera.y, entity.texture.width*entity.size, entity.texture.height*entity.size);
+		
+		gl.enable(gl.BLEND);
+		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+		graphic_render_mesh(sprite, color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
 	}	
 }
 

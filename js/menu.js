@@ -1,28 +1,29 @@
-var game;
 var map;
-var models;
 
 function init() {
-	game = engine_map('data/map.json');
 	map = engine_map('data/map.json');
-	models = engine_map('data/models.json');
 	menu_game();
 }
 
+var editorRunning;
+var entities = [];
+
 function menu_game() {
-	engine_resume(game);
-	models.running = false;
-}
-
-function menu_map() {
-	engine_pause(game);
-	models.running = false;
-}
-
-function menu_model() {
-	engine_pause(game);
+	engine_resume(map.entities);
 	
-	models.running = true;
+	for (var key in map.models) {
+		var model = map.models[key];
+		var entity = {"model":model};
+		entities.push(entity);
+	}
+	
+	editorRunning = false;
+}
+
+function menu_editor() {
+	engine_pause(map.entities);
+	
+	editorRunning = true;
 	var camera = {'x': 0, 'y': 0};
 	
 	var frame_per_line = 3;
@@ -30,35 +31,37 @@ function menu_model() {
 	var framespace = 128 + 30;
 	//var linewidth = frame_per_line*framesize + (frame_per_line-1)*framespace;
 
-	for (var i=0; i<models.length; i++) {
-		var model = models[i];
+	for (var i=0; i<entities.length; i++) {
+		var entity = entities[i];
 		
 		var x = (i % frame_per_line) - Math.floor(frame_per_line / 2);
 		var y = Math.floor(i / frame_per_line);
 		
-		model.y = -y * framespace;		
-		model.x = /*(x * (framesize+framespace) - linewidth / 2)*/ x * framespace * Math.max(1, 1-Math.abs(model.y)/480);		
-		model.size = Math.min(framesize / model.texture.width, framesize / model.texture.height);
+		entity.y = -y * framespace;		
+		//model.x = /*(x * (framesize+framespace) - linewidth / 2)*/ x * framespace * Math.max(1, 1-Math.abs(model.y)/480);		
+		entity.x = x * framespace * Math.max(1, 1-Math.abs(entity.y)/480);		
+		entity.size = Math.min(framesize / entity.model.texture.width, framesize / entity.model.texture.height);
+		entity.layer = 1;
 	}
 	
 	document.addEventListener('DOMMouseScroll', function (event) {
-		if (!models.running)
+		if (!editorRunning)
 			return;
 	
-		for (var i=0; i<models.length; i++) {
-			var model = models[i];
+		for (var i=0; i<entities.length; i++) {
+			var model = entities[i];
 			
 			model.y += event.detail * 30;
 		}
 	}, false);
 	
-	model_editor(camera, models);
+	model_editor_main(camera, entities.concat(map.entities));
 }
 
-function model_editor(camera, models) {
+function model_editor_main(camera, entities) {
 
-	graphinc_draw(camera, models);
+	graphinc_draw(camera, entities, true);
 	
-	if (models.running)
-		setTimeout(model_editor, 0, camera, models);
+	if (editorRunning)
+		setTimeout(model_editor_main, 0, camera, entities);
 }

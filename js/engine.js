@@ -28,7 +28,7 @@ function engine_resume(game) {
 	engine_main(game);
 }
 
-function engine_pause() {
+function engine_pause(game) {
 	game.running = false;
 }
 
@@ -36,7 +36,13 @@ function engine_main(map) {
 	if (!keys)
 		engine_keyboard();
 
-	var entity = map[0];
+	var entity;
+	for (var i=0; i<map.length; i++) {
+		entity = map[i];
+		if (entity.name == 'hero') {
+			break;
+		}
+	}
 	
 	var camera = {'x': 0, 'y': 0};
 	
@@ -50,25 +56,39 @@ function engine_main(map) {
 		camera.y = entity.y;
 	}
 
-	graphinc_draw(camera, map);
+	graphinc_draw(camera, map, false);
 	if (map.running) {
 		setTimeout(engine_main, 0, map);
 	}
 }
 
 function engine_map(url) {
-	var map = [];
+	var map = {"entities":[],"models":[]};
 
 	new Ajax.Request(url,
 	  {
 		method:'get',
 		onSuccess: function(response){
-			var models = JSON.parse(response.responseText);
-		  
-			for (var i=0; i<models.length; i++) {
-				var model = models[i];
-				var entity = engine_entity(model);
-				map.push(entity);
+			// load file
+			var file = JSON.parse(response.responseText);
+			
+			// load models
+			for (var key in file.models) {
+				var model = file.models[key];
+				model.texture = graphic_texture(model.image);
+				map.models[key] = model;
+			}
+			
+			for (var i=0; i<file.entities.length; i++) {
+				var entity = file.entities[i];
+				entity.model = map.models[entity.modelref];
+				
+				if (!entity.x) entity.x = 0;
+				if (!entity.y) entity.y = 0;
+				if (!entity.size) entity.size = 1;
+				if (!entity.layer) entity.layer = 0;
+				
+				map.entities.push(entity);
 			}
 		},
 		onFailure: function() { 
@@ -77,22 +97,4 @@ function engine_map(url) {
 	  });
 	  
 	  return map;
-}
-
-function engine_entity(model) {
-	var entity = JSON.parse(JSON.stringify(model));
-	
-	if (!entity.x)
-		entity.x = 0;
-		
-	if (!entity.y)
-		entity.y = 0;
-		
-	if (!entity.size)
-		entity.size = 1.0;
-		
-	if (!entity.texture && entity.image)
-		entity.texture = graphic_texture(entity.image);
-	
-	return entity;
 }
