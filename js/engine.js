@@ -1,29 +1,16 @@
-var keys;
+var keys = {};
 
-function engine_keyboard() {
-	keys = {};
-	
-	/*document.addEventListener('keypress', function (event) {
-		//alert('keypress');
-		keys[event.keyCode.toString()] = true;
-	});
-	
-	document.addEventListener('keyup', function (event) {
-		//alert(event.keyCode);
-		keys[event.keyCode.toString() ] = false;
-	});*/
+function engine_resume(game) {
+	game.running = true;
 	
 	document.onkeydown = function (event) {
+		if(event.altKey && event.keyCode != 18) alert(event.keyCode);
 		keys[event.keyCode.toString()] = true;
 	};
 	
 	document.onkeyup = function (event) {
 		keys[event.keyCode.toString()] = false;
 	};
-}
-
-function engine_resume(game) {
-	game.running = true;
 	
 	engine_main(game);
 }
@@ -32,9 +19,8 @@ function engine_pause(game) {
 	game.running = false;
 }
 
-function engine_main(map) {
-	if (!keys)
-		engine_keyboard();
+function engine_main(map) {		
+	if (keys['27']) menu_editor();
 
 	var entity;
 	for (var i=0; i<map.length; i++) {
@@ -44,7 +30,7 @@ function engine_main(map) {
 		}
 	}
 	
-	var camera = {'x': 0, 'y': 0};
+	var camera = {'x': 0, 'y': 0, 'zoom': 2};
 	
 	if (entity) {
 		if (keys['87']) entity.y += 6;

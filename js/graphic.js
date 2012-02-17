@@ -20,10 +20,6 @@ function graphic_init() {
 		return;
 	}
 	
-	// set states
-	gl.viewport(0, 0, canvas.width, canvas.height);
-	gl.clearColor(0.3, 0.3, 0.3, 1.0);
-	
 	program = graphic_shader('shader/vertex.vs', 'shader/fragment.fs');
 	
 	textureWhite = graphic_texture_solid(255,255,255,255);
@@ -36,10 +32,10 @@ function graphinc_draw(camera, entities, grid) {
 		graphic_init();
 	}
 
-	
+	gl.viewport(0, 0, canvas.width, canvas.height);
 	gl.enable(gl.TEXTURE_2D);
 	
-	graphic_load_projection();
+	graphic_load_projection(camera.zoom);
 	
 	if (grid) {
 		gl.clearColor(0.3, 0.3, 0.3, 1.0);
@@ -107,8 +103,8 @@ function graphic_mesh_init() {
 	var sprite_indices = [0, 1, 2, 2, 1, 3];
 	sprite = graphic_mesh(gl.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
 	
-	var width = canvas.width/2;
-	var height = canvas.height/2;
+	var width = canvas.width/2 * 2;
+	var height = canvas.height/2 * 2;
 	
 	var xaxis_vertices = [-width,  0, width,  0];
 	var xaxis_indices = [0, 1];
@@ -293,17 +289,18 @@ function graphic_texture_solid(r, g, b, a) {
 }
 
 
-function graphic_load_projection() {
+function graphic_load_projection(zoom) {
 	var r = canvas.width/2.0;
 	var l = -r;
 	var t = canvas.height/2.0;
 	var b = -t;
 	var n = 0.0;
 	var f = 1.0;
+	//zoom = 1;
 	
 	var projectionMatrix = [
-		2.0/(r-l),    0,            0,            0,
-		0,            2.0/(t-b),    0,            0,
+		2.0/(r-l)*zoom,    0,            0,            0,
+		0,            2.0/(t-b)*zoom,    0,            0,
 		0,            0,            -2.0/(f-n),   0,
 		-(r+l)/(r-l), -(t+b)/(t-b), -(f+n)/(f-n), 1
 	];
