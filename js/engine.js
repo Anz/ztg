@@ -22,8 +22,7 @@ function engine_main(map) {
 
 	var camera = {'x': 0, 'y': 0, 'zoom': 2};
 	
-	for (var i=0; i<map.length; i++) {
-		var entity = map[i];
+	map.each(function(entity) {
 		if (entity.model.name == 'hero') {
 			if (keys['87']) entity.y += 6;
 			if (keys['65']) entity.x -= 6;
@@ -32,9 +31,9 @@ function engine_main(map) {
 			
 			camera.x = entity.x;
 			camera.y = entity.y;
-			break;
+			throw $break;
 		}
-	}
+	});
 
 	graphinc_draw(camera, map, {"r":0,"g":0,"b":0,"a":1});
 	setTimeout(engine_main, 0, map);
@@ -57,23 +56,20 @@ function engine_map(url) {
 			var file = JSON.parse(response.responseText);
 			
 			// load models
-			for (var i=0; i<file.models.length; i++) {
-				var model = file.models[i];
+			file.models.each(function(model) {
 				model.mesh = sprite;
 				model.texture = graphic_texture(model.image);
 				map.models.push(model);
-			}
+			});
 			
-			for (var i=0; i<file.entities.length; i++) {
-				var entity = file.entities[i];
+			file.entities.each(function(entity) {
 				entity.model = map.models[entity.modelref];
-				for (var j=0; j<file.models.length; j++) {
-					var model = file.models[j];
+				file.models.each(function(model) {
 					if (entity.modelref == model.name) {
 						entity.model = model;
-						break;
+						throw $break;
 					}
-				}
+				});
 				
 				if (!entity.size) entity.size = 1;
 				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};
@@ -82,7 +78,7 @@ function engine_map(url) {
 				}
 				
 				map.entities.push(entity);
-			}
+			});
 		},
 		onFailure: function() { 
 			alert('Can not load ' + url); 

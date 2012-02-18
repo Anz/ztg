@@ -18,9 +18,9 @@ function editor_init() {
 	canvas = $('canvas');
 	
 	grid = Grid();
-	for (var i=0; i<grid.length; i++) {
-		map.entities.push(grid[i]);
-	}
+	grid.each(function(entity) {
+		map.entities.push(entity);
+	});
 	
 	editor_resume();
 }
@@ -53,13 +53,12 @@ function model_editor_main(camera, entities) {
 		
 		var game = new Array(map.entities.length-grid.length);
 		var index = 0;
-		for (var i=0; i<map.entities.length; i++) {
-			var entity = map.entities[i];
+		map.entities.each(function(entity) {
 			if (grid.indexOf(entity) != -1)
-				continue;
+				throw $continue;
 			game[index] = entity.clone();
 			index++;
-		}
+		});
 		game.editor = editor_resume;
 		
 		engine_resume(game);
@@ -68,10 +67,9 @@ function model_editor_main(camera, entities) {
 
 	// load models
 	if (map.models.length > 0 && adding.length == 0) {		
-		for (var i=0; i<map.models.length; i++) {
-			var model = map.models[i];
+		map.models.each(function(model) {
 			adding.push(Entity(model,0,0,1.1,null,null));
-		}
+		});
 	}
 
 	// camera moving
@@ -125,16 +123,14 @@ function model_editor_main(camera, entities) {
 	// moving selection along the cursor
 	if (mode == Modes.MOVE) {
 		var target = getSpacePosition(mouse);
-		for (var i=0; i<selection.length; i++) {
-			var entity = selection[i];
+		selection.each(function(entity) {
 			entity.x = target.x;
 			entity.y = target.y;
-		}
+		});
 		
 		if (selection.length == 1) {
 			var element = selection[0];
-			for (var i=0; i<map.entities.length; i++) {
-				var entity = map.entities[i];
+			map.entities.each(function(entity) {
 				var distx = Math.abs(entity.x - element.x) - (entity.model.texture.width + element.model.texture.width) / 2;
 				var disty = Math.abs(entity.y - element.y) - (entity.model.texture.height + element.model.texture.height) / 2;
 				if (distx >= -10 && distx <= 10 && disty <= 2) {
@@ -145,7 +141,7 @@ function model_editor_main(camera, entities) {
 					if (entity.y < element.y) element.y -= disty;
 					if (entity.y > element.y) element.y += disty;
 				}
-			}
+			});
 		}
 	}
 	
@@ -167,10 +163,7 @@ function onMouseMove(event) {
 function onClick(event) {	
 	switch (mode) {
 		case Modes.MOVE: {
-			for (var i=0; i<selection.length; i++) {
-				var element = selection[i];
-				map.entities.push(element);
-			}
+			selection.each(function(entity) { map.entities.push(entity); });
 			selection.length = 0;
 			mode = Modes.EDIT;
 			break;
@@ -178,17 +171,16 @@ function onClick(event) {
 		case Modes.ADD: {
 			var mouse = getSpacePosition(getViewPosition(event));
 		
-			for (var i=0; i<adding.length; i++) {
-				var entity = adding[i];
+			adding.each(function(entity) {
 				if (Math.abs(entity.x - mouse.x) < entity.size*entity.model.texture.width/ 2 && 
 					Math.abs(entity.y - mouse.y) < entity.size*entity.model.texture.height / 2) {
 					var clone = entity.clone();
 					clone.size = 1;
 					selection.push(clone);
 					mode = Modes.MOVE;
-					break;
+					throw $break;
 				}
-			}
+			});
 			break;
 		}
 	}
@@ -212,10 +204,9 @@ function onMouseWheel(event) {
 			break;
 		}
 		case Modes.ADD: {
-			for (var i=0; i<adding.length; i++) {
-				var element = adding[i];
-				element.y += delta * 100;
-			}
+			adding.each(function(entity) {
+				entity.y += delta * 100;
+			});
 			break;
 		}
 	}
