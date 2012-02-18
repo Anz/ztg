@@ -1,7 +1,6 @@
 var keys = {};
 
 function engine_resume(game) {
-	game.running = true;
 	
 	document.onkeydown = function (event) {
 		if(event.altKey && event.keyCode != 18) alert(event.keyCode);
@@ -15,12 +14,11 @@ function engine_resume(game) {
 	engine_main(game);
 }
 
-function engine_pause(game) {
-	game.running = false;
-}
-
-function engine_main(map) {		
-	if (keys['27']) menu_editor();
+function engine_main(map) {
+	if (keys['27']) {
+		editor_resume();
+		return;
+	}
 
 	var entity;
 	for (var i=0; i<map.length; i++) {
@@ -43,9 +41,7 @@ function engine_main(map) {
 	}
 
 	graphinc_draw(camera, map, false);
-	if (map.running) {
-		setTimeout(engine_main, 0, map);
-	}
+	setTimeout(engine_main, 0, map);
 }
 
 function engine_map(url) {
@@ -76,11 +72,11 @@ function engine_map(url) {
 					}
 				}
 				
-				if (!entity.x) entity.x = 0;
-				if (!entity.y) entity.y = 0;
 				if (!entity.size) entity.size = 1;
-				if (!entity.layer) entity.layer = 0;
 				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};
+				entity.clone = function () {
+					return Entity(this.model,this.x,this.y,this.layer,this.size,this.color);
+				}
 				
 				map.entities.push(entity);
 			}
@@ -91,4 +87,19 @@ function engine_map(url) {
 	  });
 	  
 	  return map;
+}
+
+function Entity(model, x, y, layer, size, color) {
+	var entity = {
+		"model": model,
+		"x": x ? x : 0, 
+		"y": y ? y : 0,
+		"size": size ? size : 1, 
+		"layer": layer ? layer : 0, 
+		"color": color ? color : {"r":1,"g":1,"b":1,"a":1}, 
+		"clone": function () {
+			return Entity(this.model,this.x,this.y,this.layer,this.size,this.color);
+		}
+	}
+	return entity;
 }
