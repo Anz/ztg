@@ -1,17 +1,17 @@
 {
 	"entities": [
-		{ "name": "john", "modelref": "john2", "x": -256, "y": 0, "layer": 0.5},
+		{ "name": "john", "modelref": "Level", "x": -256, "y": 0, "layer": 0},
 		{ "name": "hero", "modelref": "hero", "x": 0, "y": 0, "layer": 0.5},
-		{ "name": "john", "modelref": "john1", "x": 0, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "john1", "x": 256, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "john1", "x": 512, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "john1", "x": 768, "y": 0, "layer": 0}
+		{ "name": "john", "modelref": "Level", "x": 0, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "Level", "x": 256, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "Level", "x": 512, "y": 0, "layer": 0},
+		{ "name": "john", "modelref": "Level", "x": 768, "y": 0, "layer": 0}
 	],
 	"models": [
 		{"name":"hero","image": "john.png"},
-		{"name":"john1", "image": "level.png"},
-		{"name":"john2", "image": "level.png"},
-		{"name":"john3", "image": "level.png"},
-		{"name":"john4", "image": "level.png"}
+		{"name":"Level", "image": "cave_lamp.png"},
+		{"name":"CaveEntrance", "image": "cave_entrance.png"},
+		{"name":"CaveEnd", "image": "cave_end.png"},
+		{"name":"Box", "image": "box.png"}
 	]
 }

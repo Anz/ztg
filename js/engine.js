@@ -20,32 +20,34 @@ function engine_main(map) {
 		return;
 	}
 
-	var entity;
+	var camera = {'x': 0, 'y': 0, 'zoom': 2};
+	
 	for (var i=0; i<map.length; i++) {
-		entity = map[i];
-		if (entity.name == 'hero') {
+		var entity = map[i];
+		if (entity.model.name == 'hero') {
+			if (keys['87']) entity.y += 6;
+			if (keys['65']) entity.x -= 6;
+			if (keys['83']) entity.y -= 6;
+			if (keys['68']) entity.x += 6;
+			
+			camera.x = entity.x;
+			camera.y = entity.y;
 			break;
 		}
 	}
-	
-	var camera = {'x': 0, 'y': 0, 'zoom': 2};
-	
-	if (entity) {
-		if (keys['87']) entity.y += 6;
-		if (keys['65']) entity.x -= 6;
-		if (keys['83']) entity.y -= 6;
-		if (keys['68']) entity.x += 6;
-		
-		camera.x = entity.x;
-		camera.y = entity.y;
-	}
 
-	graphinc_draw(camera, map, false);
+	graphinc_draw(camera, map, {"r":0,"g":0,"b":0,"a":1});
 	setTimeout(engine_main, 0, map);
 }
 
 function engine_map(url) {
 	var map = {"entities":[],"models":[]};
+	
+	// create mesh
+	var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
+	var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
+	var sprite_indices = [0, 1, 2, 2, 1, 3];
+	sprite = graphic_mesh(PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
 
 	new Ajax.Request(url,
 	  {
@@ -57,6 +59,7 @@ function engine_map(url) {
 			// load models
 			for (var i=0; i<file.models.length; i++) {
 				var model = file.models[i];
+				model.mesh = sprite;
 				model.texture = graphic_texture(model.image);
 				map.models.push(model);
 			}

@@ -2,9 +2,8 @@ var gl;
 var canvas;
 var program;
 
-var sprite = {};
-var small_grid;
-var big_grid;
+var PRIMITIVE = {TRIANGLES:0,LINES:1};
+
 var xaxis;
 var yaxis;
 
@@ -23,35 +22,19 @@ function graphic_init() {
 	program = graphic_shader('shader/vertex.vs', 'shader/fragment.fs');
 	
 	textureWhite = graphic_texture_solid(255,255,255,255);
-	
-	graphic_mesh_init();
 }
 
-function graphinc_draw(camera, entities, grid) {
+function graphinc_draw(camera, entities, background) {
 	if (!gl) {
 		graphic_init();
 	}
 
 	gl.viewport(0, 0, canvas.width, canvas.height);
-	gl.enable(gl.TEXTURE_2D);
 	
 	graphic_load_projection(camera.zoom);
 	
-	if (grid) {
-		gl.clearColor(0.3, 0.3, 0.3, 1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		// render grid
-		var color = { "r":0.5,"g":0.5,"b":0.5,"a":1};
-		graphic_render_mesh(small_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
-		var color = { "r":0.6,"g":0.6,"b":0.6,"a":1};
-		graphic_render_mesh(big_grid, color, textureWhite, -(camera.x % 100), -(camera.y % 100), 1, 1);
-		var color = { "r":1,"g":1,"b":0,"a":1};
-		graphic_render_mesh(xaxis, color, textureWhite, 0, -camera.y, 1, 1);
-		graphic_render_mesh(yaxis, color, textureWhite, -camera.x, 0, 1, 1);
-	} else{
-		gl.clearColor(0, 0, 0, 1.0);
-		gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-	}
+	gl.clearColor(background.r, background.g, background.b, background.a);
+	gl.clear(gl.COLOR_BUFFER_BIT);
 	
 	entities.sort(
 		function (a, b) {
@@ -63,7 +46,7 @@ function graphinc_draw(camera, entities, grid) {
 		
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		graphic_render_mesh(sprite, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
+		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
 	}	
 }
 
@@ -97,68 +80,16 @@ function graphic_render_mesh(mesh, color, texture, x, y, width, height) {
 	gl.drawElements(mesh.type, mesh.num_indices, gl.UNSIGNED_SHORT, 0);
 }
 
-function graphic_mesh_init() {
-	var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
-	var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
-	var sprite_indices = [0, 1, 2, 2, 1, 3];
-	sprite = graphic_mesh(gl.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
-	
-	var width = canvas.width/2 * 2;
-	var height = canvas.height/2 * 2;
-	
-	var xaxis_vertices = [-width,  0, width,  0];
-	var xaxis_indices = [0, 1];
-	xaxis = graphic_mesh(gl.LINES, xaxis_vertices, null, xaxis_indices);
-	
-	var yaxis_vertices = [0,  -height, 0,  height];
-	var yaxis_indices = [0, 1];
-	yaxis = graphic_mesh(gl.LINES, yaxis_vertices, null, yaxis_indices);
-	
-	// grid
-	var xlimit = width + 100 - (width % 100) + 100;
-	var ylimit = height + 100 - (height % 100) + 100;
-	
-	var small_grid_vertices = [];
-	var big_grid_vertices = [];
-	
-	for (var i=-xlimit; i<=xlimit; i+=10) {
-		var grid_vertices;
-		if(Math.abs(i)  % 100 == 0) grid_vertices = big_grid_vertices;
-		else grid_vertices = small_grid_vertices;
-		
- 		grid_vertices.push(i);
-		grid_vertices.push(-ylimit);		
-		grid_vertices.push(i);
-		grid_vertices.push(ylimit);
-	}
-	
-	for (var i=-ylimit; i<=ylimit; i+=10) {
-		var grid_vertices;
-		if (Math.abs(i) % 100 == 0) grid_vertices = big_grid_vertices;
-		else grid_vertices = small_grid_vertices;
-	
-		grid_vertices.push(-xlimit);
-		grid_vertices.push(i);		
-		grid_vertices.push(xlimit);
-		grid_vertices.push(i);
-	}
-	
-	var small_grid_indices = new Array(small_grid_vertices.length/2);
-	var big_grid_indices = new Array(big_grid_vertices.length/2);
-	
-	for (var i=0; i<small_grid_vertices.length/2; i++) {
-		small_grid_indices[i] = i;
-		if (i < big_grid_vertices.length/2)
-			big_grid_indices[i] = i;
-	}
-	
-	small_grid = graphic_mesh(gl.LINES, small_grid_vertices, null, small_grid_indices);
-	big_grid = graphic_mesh(gl.LINES, big_grid_vertices, null, big_grid_indices);
-}
-
 function graphic_mesh(type, vertices, textureCoords, indices) {
+	if (!gl) {
+		graphic_init();
+	}
+
 	var mesh = {};
-	mesh.type = type;
+	switch (type) {
+		case PRIMITIVE.TRIANGLES: mesh.type = gl.TRIANGLES; break;
+		case PRIMITIVE.LINES: mesh.type = gl.LINES; break;
+	}
 
 	// vertex
 	mesh.vertices = gl.createBuffer();
@@ -185,6 +116,10 @@ function graphic_mesh(type, vertices, textureCoords, indices) {
 }
 
 function graphic_shader(vertexUrl, fragmentUrl) {
+	if (!gl) {
+		graphic_init();
+	}
+
 	// create program object
 	var vertexShader = gl.createShader(gl.VERTEX_SHADER);
 	var fragmentShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -253,6 +188,10 @@ function graphic_shader(vertexUrl, fragmentUrl) {
 
 
 function graphic_texture(name) {
+	if (!gl) {
+		graphic_init();
+	}
+
 	var texture = images[name];
 	
 	if (texture) {
@@ -279,12 +218,18 @@ function graphic_texture(name) {
 }
 
 function graphic_texture_solid(r, g, b, a) {
+	if (!gl) {
+		graphic_init();
+	}
+
     var data = new Uint8Array([r, g, b, a]);
     var texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, data);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+	texture.width = 1;
+	texture.height = 1;
     return texture;
 }
 
@@ -296,7 +241,6 @@ function graphic_load_projection(zoom) {
 	var b = -t;
 	var n = 0.0;
 	var f = 1.0;
-	//zoom = 1;
 	
 	var projectionMatrix = [
 		2.0/(r-l)*zoom,    0,            0,            0,
