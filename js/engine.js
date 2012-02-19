@@ -1,21 +1,21 @@
-var keys = {};
+var keys = new Hash();
 
 function engine_resume(game) {
 	
 	document.onkeydown = function (event) {
 		if(event.altKey && event.keyCode != 18) alert(event.keyCode);
-		keys[event.keyCode.toString()] = true;
+		keys.set(event.keyCode.toString(), true);
 	};
 	
 	document.onkeyup = function (event) {
-		keys[event.keyCode.toString()] = false;
+		keys.unset(event.keyCode.toString());
 	};
 	
 	engine_main(game);
 }
 
 function engine_main(map) {
-	if (keys['27']) {
+	if (keys.get('27')) {
 		editor_resume();
 		return;
 	}
@@ -24,13 +24,11 @@ function engine_main(map) {
 	
 	map.each(function(entity) {
 		if (entity.model.name == 'hero') {
-			if (keys['87']) entity.y += 6;
-			if (keys['65']) entity.x -= 6;
-			if (keys['83']) entity.y -= 6;
-			if (keys['68']) entity.x += 6;
+			if (keys.get('65')) entity.x -= 6;
+			if (keys.get('68')) entity.x += 6;
 			
-			camera.x = entity.x;
-			camera.y = entity.y;
+			camera.x = entity.x + 100;
+			camera.y = entity.y + 50;
 			throw $break;
 		}
 	});

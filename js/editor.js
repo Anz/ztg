@@ -6,7 +6,7 @@ var frameMesh;
 var ZOOM_MAX = 0.2;
 
 var mouse = {"x":0,"y":0};
-var keys = {};
+var keys = new Hash();
 
 var Modes = {EDIT:0,MOVE:1,ADD:2};
 var mode = Modes.EDIT;
@@ -34,8 +34,8 @@ function editor_resume() {
 	canvas.oncontextmenu = onRightClick
 	window.onmousewheel = onMouseWheel;
 	document.addEventListener('DOMMouseScroll', onMouseWheel, false);	
-	document.onkeydown = function (e) { keys[e.keyCode.toString()] = true; };
-	document.onkeyup = function (e) { keys[e.keyCode.toString()] = false; };
+	document.onkeydown = function (e) { keys.set(e.keyCode.toString(), true); };
+	document.onkeyup = function (e) { keys.unset(e.keyCode.toString()); };
 	
 	mode = Modes.EDIT;
 	
@@ -44,7 +44,7 @@ function editor_resume() {
 
 function model_editor_main() {
 	// start game
-	if (keys['17'] && keys['32']) {		
+	if (keys.get('17') && keys.get('32')) {		
 		canvas.onmousemove = null;
 		canvas.onclick = null;
 		canvas.oncontextmenu = null
@@ -60,7 +60,7 @@ function model_editor_main() {
 			index++;
 		});
 		game.editor = editor_resume;
-		
+		keys = new Hash();
 		engine_resume(game);
 		return;
 	}
@@ -73,13 +73,13 @@ function model_editor_main() {
 	}
 
 	// camera moving
-	if (keys['87']) camera.y += 20 / camera.zoom;
-	if (keys['65']) camera.x -= 20 / camera.zoom;
-	if (keys['83']) camera.y -= 20 / camera.zoom;
-	if (keys['68']) camera.x += 20 / camera.zoom;
+	if (keys.get('87')) camera.y += 20 / camera.zoom;
+	if (keys.get('65')) camera.x -= 20 / camera.zoom;
+	if (keys.get('83')) camera.y -= 20 / camera.zoom;
+	if (keys.get('68')) camera.x += 20 / camera.zoom;
 	
 	// reset camera
-	if (keys['226']) {
+	if (keys.get('226')) {
 		mouse.x = 0;
 		mouse.y = 0;
 		camera.x = 0;
@@ -96,13 +96,21 @@ function model_editor_main() {
 	grid[3].y = camera.y-(camera.y % 100);
 	
 	// change into adding mode
-	if (keys['32']) {
+	if (keys.get('32')) {
 		mode = Modes.ADD;
 	}
 	
 	// change into moving mode
-	if (keys['89'] && selection.length > 0) {
+	if (keys.get('89') && selection.length > 0) {
 		mode = Modes.MOVE;
+	}
+	
+	// delete selection
+	if (keys.get('88')) {
+		selection.each(function(entity) {
+			map.entities = map.entities.without(entity.target);
+		});
+		selection.length = 0;
 	}
 	
 	// moving adding elements along the cursor
@@ -147,26 +155,34 @@ function model_editor_main() {
 			entity.target.y = entity.y;
 		});
 		
-		var dist;
+		var dist = {}
 		selection.each(function(element) {
 			map.entities.each(function(entity) {
-				var distx = Math.abs(entity.x - element.x) - (entity.width + element.width) / 2;
-				var disty = Math.abs(entity.y - element.y) - (entity.height + element.height) / 2;
-				if (distx >= -10 && distx <= 10 && disty <= 2)
-					if (entity.x < element.x) distx = -distx;
-				if (disty >= -10 && disty <= 10 && distx <= 2)
-					if (entity.y < element.y) disty = -disty;
-				if (!dist || dist.x+dist.y > distx+disty)
-					dist = {"x":distx,"y":disty};
+				if (entity.target)
+					return;			
+				var distx = Math.abs(entity.x - element.target.x) - (entity.width + element.target.width) / 2;
+				var disty = Math.abs(entity.y - element.target.y) - (entity.height + element.target.height) / 2;
+				if (Math.abs(distx) <= 10 && disty < 0 && (!dist.x || Math.abs(distx) < Math.abs(dist.x))) {
+					if (entity.x < element.target.x) distx = -distx;
+					dist.x = distx;
+				}
+				if (Math.abs(disty) <= 10 && distx < 0 && (!dist.y || Math.abs(disty) < Math.abs(dist.y))) {
+					if (entity.y < element.target.y) disty = -disty;
+					dist.y = disty;
+				}
 			});
 		});
-		if (dist) {
-			/*selection.each(function(entity) {
-				entity.x += dist.x;
-				entity.y += dist.y;
-				entity.target.x = entity.x;
-				entity.target.y = entity.y;
-			});*/
+		if (dist.x) {
+			selection.each(function(entity) {
+					entity.x += dist.x;
+					entity.target.x = entity.x;
+			});
+		}
+		if (dist.y) {
+			selection.each(function(entity) {
+					entity.y += dist.y;
+					entity.target.y = entity.y;
+			});
 		}
 	}
 	
@@ -199,7 +215,7 @@ function onClick(event) {
 				}
 			});
 			
-			if (!keys['17']) {
+			if (!keys.get('17')) {
 				selection.each(function(entity) {
 					delete entity.target.selection;
 					delete entity.target.oldx;
