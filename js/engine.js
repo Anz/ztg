@@ -46,7 +46,7 @@ function engine_map(url) {
 	var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
 	var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
 	var sprite_indices = [0, 1, 2, 2, 1, 3];
-	sprite = graphic_mesh(PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
+	var sprite = graphic_mesh(PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
 
 	new Ajax.Request(url,
 	  {
@@ -63,18 +63,18 @@ function engine_map(url) {
 			});
 			
 			file.entities.each(function(entity) {
-				entity.model = map.models[entity.modelref];
+				entity.model;
 				file.models.each(function(model) {
 					if (entity.modelref == model.name) {
 						entity.model = model;
 						throw $break;
 					}
 				});
-				
-				if (!entity.size) entity.size = 1;
+				if (!entity.width) entity.width = entity.model.texture.width;
+				if (!entity.height) entity.height = entity.model.texture.height;
 				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};
 				entity.clone = function () {
-					return Entity(this.model,this.x,this.y,this.layer,this.size,this.color);
+					return Entity(this.model,this.x,this.y,this.layer,this.width,this.height,this.color);
 				}
 				
 				map.entities.push(entity);
@@ -88,16 +88,17 @@ function engine_map(url) {
 	  return map;
 }
 
-function Entity(model, x, y, layer, size, color) {
+function Entity(model, x, y, layer, width, height, color) {
 	var entity = {
 		"model": model,
 		"x": x ? x : 0, 
 		"y": y ? y : 0,
-		"size": size ? size : 1, 
+		"width": width ? width : 0,
+		"height": height ? height : 0,
 		"layer": layer ? layer : 0, 
 		"color": color ? color : {"r":1,"g":1,"b":1,"a":1}, 
 		"clone": function () {
-			return Entity(this.model,this.x,this.y,this.layer,this.size,this.color);
+			return Entity(this.model,this.x,this.y,this.layer,this.width,this.height,this.color);
 		}
 	}
 	return entity;

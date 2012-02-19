@@ -43,10 +43,13 @@ function graphinc_draw(camera, entities, background) {
 		
 	for (var i=0; i<entities.length; i++) {
 		var entity = entities[i];
+		if (!entity.width) entity.width = entity.model.texture.width;
+		if (!entity.height) entity.height = entity.model.texture.height;
+		if (!entity.width || !entity.height) continue;
 		
 		gl.enable(gl.BLEND);
 		gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
-		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.model.texture.width*entity.size, entity.model.texture.height*entity.size);
+		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.width, entity.height);
 	}	
 }
 

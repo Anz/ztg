@@ -1,5 +1,7 @@
 var camera = {'x': 0, 'y': 0,'zoom': 1};
 var canvas;
+var textureWhite;
+var frameMesh;
 
 var ZOOM_MAX = 0.2;
 
@@ -18,9 +20,9 @@ function editor_init() {
 	canvas = $('canvas');
 	
 	grid = Grid();
-	grid.each(function(entity) {
-		map.entities.push(entity);
-	});
+	
+	textureWhite = graphic_texture_solid(255,255,255,255);
+	frameMesh = Frame();
 	
 	editor_resume();
 }
@@ -40,7 +42,7 @@ function editor_resume() {
 	model_editor_main(camera, map.entities);
 }
 
-function model_editor_main(camera, entities) {
+function model_editor_main() {
 	// start game
 	if (keys['17'] && keys['32']) {		
 		canvas.onmousemove = null;
@@ -54,8 +56,6 @@ function model_editor_main(camera, entities) {
 		var game = new Array(map.entities.length-grid.length);
 		var index = 0;
 		map.entities.each(function(entity) {
-			if (grid.indexOf(entity) != -1)
-				throw $continue;
 			game[index] = entity.clone();
 			index++;
 		});
@@ -68,7 +68,7 @@ function model_editor_main(camera, entities) {
 	// load models
 	if (map.models.length > 0 && adding.length == 0) {		
 		map.models.each(function(model) {
-			adding.push(Entity(model,0,0,1.1,null,null));
+			adding.push(Entity(model,0,0,1.1));
 		});
 	}
 
@@ -100,6 +100,11 @@ function model_editor_main(camera, entities) {
 		mode = Modes.ADD;
 	}
 	
+	// change into moving mode
+	if (keys['89'] && selection.length > 0) {
+		mode = Modes.MOVE;
+	}
+	
 	// moving adding elements along the cursor
 	if (mode == Modes.ADD) {
 		var frame_per_line = 3;
@@ -114,69 +119,135 @@ function model_editor_main(camera, entities) {
 			
 			entity.y = -y * framespace / camera.zoom + camera.y;
 			entity.x = x * framespace * Math.max(1, 1-Math.abs(entity.y)/480) / camera.zoom + camera.x;
-			entity.size = Math.min(1, Math.min(framesize / entity.model.texture.width, framesize / entity.model.texture.height)) / camera.zoom;
-			entity.layer = 1.1;
+			var sizeFactor = Math.min(1, Math.min(framesize / entity.model.texture.width, framesize / entity.model.texture.height)) / camera.zoom;
+			entity.width = entity.model.texture.width*sizeFactor;
+			entity.height = entity.model.texture.height*sizeFactor;
+			entity.layer = 3;
 			entity.color = { "r":1,"g":1,"b":1,"a":1};
 		}
 	}
 	
 	// moving selection along the cursor
-	if (mode == Modes.MOVE) {
+	if (mode == Modes.MOVE && selection.length > 0) {
 		var target = getSpacePosition(mouse);
+		
+		var average = {"x":0,"y":0};
 		selection.each(function(entity) {
-			entity.x = target.x;
-			entity.y = target.y;
+			average.x += entity.x;
+			average.y += entity.y;
+		});
+		average.x /= selection.length;
+		average.y /= selection.length;
+		
+		
+		selection.each(function(entity) {
+			entity.x += target.x - average.x;
+			entity.y += target.y - average.y;
+			entity.target.x = entity.x;
+			entity.target.y = entity.y;
 		});
 		
-		if (selection.length == 1) {
-			var element = selection[0];
+		var dist;
+		selection.each(function(element) {
 			map.entities.each(function(entity) {
-				var distx = Math.abs(entity.x - element.x) - (entity.model.texture.width + element.model.texture.width) / 2;
-				var disty = Math.abs(entity.y - element.y) - (entity.model.texture.height + element.model.texture.height) / 2;
-				if (distx >= -10 && distx <= 10 && disty <= 2) {
-					if (entity.x < element.x) element.x -= distx;
-					if (entity.x > element.x) element.x += distx;
-				}
-				if (disty >= -10 && disty <= 10 && distx <= 2) {
-					if (entity.y < element.y) element.y -= disty;
-					if (entity.y > element.y) element.y += disty;
-				}
+				var distx = Math.abs(entity.x - element.x) - (entity.width + element.width) / 2;
+				var disty = Math.abs(entity.y - element.y) - (entity.height + element.height) / 2;
+				if (distx >= -10 && distx <= 10 && disty <= 2)
+					if (entity.x < element.x) distx = -distx;
+				if (disty >= -10 && disty <= 10 && distx <= 2)
+					if (entity.y < element.y) disty = -disty;
+				if (!dist || dist.x+dist.y > distx+disty)
+					dist = {"x":distx,"y":disty};
 			});
+		});
+		if (dist) {
+			/*selection.each(function(entity) {
+				entity.x += dist.x;
+				entity.y += dist.y;
+				entity.target.x = entity.x;
+				entity.target.y = entity.y;
+			});*/
 		}
 	}
 	
-	var drawable = entities;
-	switch (mode) {
-		case Modes.MOVE: drawable = drawable.concat(selection); break;
-		case Modes.ADD: drawable = drawable.concat(adding); break;
-	}
+	var drawable = map.entities.concat(selection.concat(grid));
+	if (mode == Modes.ADD)
+		drawable = drawable.concat(adding);
 
 	graphinc_draw(camera, drawable, {"r":0.3,"g":0.3,"b":0.3,"a":1});
 	
-	setTimeout(model_editor_main, 0, camera, entities);
+	setTimeout(model_editor_main, 0);
 }
 
 function onMouseMove(event) {
 	mouse = getViewPosition(event);
 }
 
-function onClick(event) {	
+function onClick(event) {
+	var mouse = getSpacePosition(getViewPosition(event));
+
 	switch (mode) {
+		case Modes.EDIT: {
+			var target;
+			map.entities.each(function(entity) {
+				if (entity.selection)
+					return;
+				if (Math.abs(entity.x - mouse.x) <= entity.width/2 &&
+					Math.abs(entity.y - mouse.y) <= entity.height/2 &&
+					(!target || entity.layer >= target.layer)) {
+					target = entity;
+				}
+			});
+			
+			if (!keys['17']) {
+				selection.each(function(entity) {
+					delete entity.target.selection;
+					delete entity.target.oldx;
+					delete entity.target.oldy;
+				});
+				selection.length = 0;
+			}
+			
+			if (target) {
+				var frame = Entity(frameMesh, target.x, target.y, 2, target.width, target.height, {"r":1,"g":1,"b":0,"a":1});
+				frame.target = target;
+				target.selection = frame;
+				target.oldx = target.x;
+				target.oldy = target.y;
+				selection.push(frame);
+			}
+			break;
+		}
+	
 		case Modes.MOVE: {
-			selection.each(function(entity) { map.entities.push(entity); });
+			selection.each(function(entity) {
+				delete entity.target.selection;
+				delete entity.target.oldx;
+				delete entity.target.oldy;
+			});
 			selection.length = 0;
 			mode = Modes.EDIT;
 			break;
 		}
-		case Modes.ADD: {
-			var mouse = getSpacePosition(getViewPosition(event));
-		
+		case Modes.ADD: {		
 			adding.each(function(entity) {
-				if (Math.abs(entity.x - mouse.x) < entity.size*entity.model.texture.width/ 2 && 
-					Math.abs(entity.y - mouse.y) < entity.size*entity.model.texture.height / 2) {
+				if (Math.abs(entity.x - mouse.x) < entity.width/2 && 
+					Math.abs(entity.y - mouse.y) < entity.height/2) {
+					selection.each(function(entity) {
+						delete entity.target.selection;
+						delete entity.target.oldx;
+						delete entity.target.oldy;
+					});
+					selection.length = 0;
+					
 					var clone = entity.clone();
-					clone.size = 1;
-					selection.push(clone);
+					clone.width = clone.model.texture.width;
+					clone.height = clone.model.texture.height;
+					var frame = Entity(frameMesh, clone.x, clone.y, 2, clone.width, clone.height, {"r":1,"g":1,"b":0,"a":1});
+					frame.target = clone;
+					clone.selection = frame;
+					selection.push(frame);
+					map.entities.push(clone);
 					mode = Modes.MOVE;
 					throw $break;
 				}
@@ -188,8 +259,18 @@ function onClick(event) {
 }
 
 function onRightClick(event) {
-	// dropping selection andchange back to edit
-	selection.length = 0;
+	// dropping selection and change back to edit
+	selection.each(function(entity) {
+		if (typeof entity.target.oldx != "undefined" && typeof entity.target.oldy != "undefined") {
+			entity.target.x = entity.target.oldx;
+			entity.target.y = entity.target.oldy;
+			entity.x = entity.target.x;
+			entity.y = entity.target.y;
+		} else {
+			map.entities = map.entities.without(entity.target);
+			selection = selection.without(entity);
+		}
+	});
 	mode = Modes.EDIT;
 	return false;
 }
@@ -274,37 +355,44 @@ function Grid() {
 			big_grid_indices[i] = i;
 	}
 	
-	var texture = graphic_texture_solid(255,255,255,255);
-	
 	var model = {
 		"xaxis": {
 			"name": "_xaxis",
 			"mesh": graphic_mesh(gl.LINES, xaxis_vertices, null, xaxis_indices),
-			"texture": texture
+			"texture": textureWhite
 		},
 		"yaxis": {
 			"name": "_yaxis",
 			"mesh": graphic_mesh(gl.LINES, yaxis_vertices, null, yaxis_indices),
-			"texture": texture
+			"texture": textureWhite
 		},
 		"small": {
 			"name": "_smallgrid",
 			"mesh": graphic_mesh(PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices),
-			"texture": texture
+			"texture": textureWhite
 		},
 		"big": {
 			"name": "_biggrid",
 			"mesh": graphic_mesh(PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices),
-			"texture": texture
+			"texture": textureWhite
 		}
 	};
 	
 	var grid = [
-		Entity(model.xaxis, 0, 0, -1, 1, {"r":1,"g":1,"b":0,"a":1}),
-		Entity(model.yaxis, 0, 0, -1, 1, {"r":1,"g":1,"b":0,"a":1}),
-		Entity(model.small, 0, 0, -3, 1, {"r":0.5,"g":0.5,"b":0.5,"a":1}),
-		Entity(model.big, 0, 0, -2, 1, {"r":0.6,"g":0.6,"b":0.6,"a":1})
+		Entity(model.xaxis, 0, 0, -1, 1, 1, {"r":1,"g":1,"b":0,"a":1}),
+		Entity(model.yaxis, 0, 0, -1, 1, 1, {"r":1,"g":1,"b":0,"a":1}),
+		Entity(model.small, 0, 0, -3, 1, 1, {"r":0.5,"g":0.5,"b":0.5,"a":1}),
+		Entity(model.big, 0, 0, -2, 1, 1, {"r":0.6,"g":0.6,"b":0.6,"a":1})
 	];
 	
 	return grid;
+}
+
+function Frame(entity) {
+	var vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
+	var indices = [0, 1, 1, 3, 3, 2, 2, 0];
+	var mesh = graphic_mesh(PRIMITIVE.LINES, vertices, null, indices);
+	
+	var model = {"name": "_frame", "mesh": mesh, "texture": textureWhite };
+	return model;
 }
