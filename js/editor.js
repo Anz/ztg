@@ -44,7 +44,7 @@ function editor_resume() {
 
 function model_editor_main() {
 	// start game
-	if (keys['17'] && keys['32']) {		
+	if (keys['17'] && keys['32']) {
 		canvas.onmousemove = null;
 		canvas.onclick = null;
 		canvas.oncontextmenu = null
@@ -64,6 +64,18 @@ function model_editor_main() {
 		engine_resume(game);
 		return;
 	}
+	
+	// calculate physics
+	map.world.Step(1000/60, 8, 3);
+	
+	map.entities.each(function(entity) {
+		/*if (!entity.body)
+			return;
+	
+		var position = entity.body.GetPosition();
+		entity.x = position.x*37;
+		entity.y = position.y*37;*/
+	});
 
 	// load models
 	if (map.models.length > 0 && adding.length == 0) {		

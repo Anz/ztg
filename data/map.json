@@ -8,8 +8,22 @@
 		{ "name": "john", "modelref": "Level", "x": 768, "y": 0, "layer": 0}
 	],
 	"models": [
-		{"name":"hero","image": "john.png"},
-		{"name":"Level", "image": "cave_lamp.png"},
+		{
+			"name":"hero",
+			"image": "john.png",
+			"dynamic": true,
+			"shapes":  [
+				{"type":"box", "x":"0", "y":"0", "width":"1", "height":"1.7"}
+			]
+		},
+		{
+			"name":"Level",
+			"image": "cave_lamp.png",
+			"dynamic": false,
+			"shapes":  [
+				{"type":"box", "x":"-3.5", "y":"0", "width":"7", "height":"1"}
+			]
+		},
 		{"name":"CaveEntrance", "image": "cave_entrance.png"},
 		{"name":"CaveEnd", "image": "cave_end.png"},
 		{"name":"Box", "image": "box.png"}

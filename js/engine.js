@@ -84,6 +84,25 @@ function engine_main(map) {
 function engine_map(url) {
 	var map = {"entities":[],"models":[]};
 	
+	// create physic world
+	var gravity = new b2Vec2(0, -9.81);
+	var doSleep = true;
+	map.world = new b2World(gravity, doSleep);
+	
+	// ground
+	var groundBodyDef = new b2BodyDef();
+	groundBodyDef.position.Set(0.0, -10);
+	var groundBody = map.world.CreateBody(groundBodyDef);
+	
+	var groundBox = new b2PolygonShape();
+	groundBox.SetAsBox(50.0, 10.0);
+	
+	var groundFixtureDef = new b2FixtureDef();
+	groundFixtureDef.shape = groundBox;
+	groundFixtureDef.density = 1.0;
+	groundFixtureDef.friction = 0.3;
+	groundBody.CreateFixture(groundFixtureDef);
+	
 	// create mesh
 	var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
 	var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
@@ -114,12 +133,9 @@ function engine_map(url) {
 				});
 				if (!entity.width) entity.width = entity.model.texture.width;
 				if (!entity.height) entity.height = entity.model.texture.height;
-				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};
-				entity.clone = function () {
-					return Entity(this.model,this.x,this.y,this.layer,this.width,this.height,this.color);
-				}
-				
-				map.entities.push(entity);
+				if (!entity.color) entity.color = { "r":1,"g":1,"b":1,"a":1};			
+
+				map.entities.push(Entity(entity.model, entity.x, entity.y, entity.layer, entity.width, entity.height, entity.color));
 			});
 		},
 		onFailure: function() { 
@@ -143,5 +159,25 @@ function Entity(model, x, y, layer, width, height, color) {
 			return Entity(this.model,this.x,this.y,this.layer,this.width,this.height,this.color);
 		}
 	}
+	
+	if (model.shapes) {
+		var bodyDef = new b2BodyDef();
+		if (model.dynamic) bodyDef.type = b2Body.b2_dynamicBody;
+		else bodyDef.type = b2Body.b2_staticBody;
+		bodyDef.position.Set(x/37, y/37);
+		entity.body = map.world.CreateBody(bodyDef);
+	
+		model.shapes.each(function(shape) {				
+			var dynamicBox = new b2PolygonShape();
+			dynamicBox.AsOrientedBox(shape.width, shape.height, new b2Vec2(shape.x, shape.y), 0);
+			
+			var fixtureDef = new b2FixtureDef();
+			fixtureDef.shape = dynamicBox;
+			fixtureDef.density = 1.0;
+			fixtureDef.friction = 0.3;
+			entity.body.CreateFixture(fixtureDef);
+		});
+	}
+	
 	return entity;
 }
