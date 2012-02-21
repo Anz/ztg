@@ -1,17 +1,52 @@
 {
 	"entities": [
-		{ "name": "john", "modelref": "CaveEntrance", "x": -256, "y": 0, "layer": 0},
-		{ "name": "hero", "modelref": "hero", "x": -286, "y": -50, "layer": 0.5},
-		{ "name": "john", "modelref": "Level", "x": 0, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "Level", "x": 256, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "Level", "x": 512, "y": 0, "layer": 0},
-		{ "name": "john", "modelref": "CaveEnd", "x": 768, "y": 0, "layer": 0}
+		{ "modelref": "CaveEntrance", "x": -256, "y": 0, "layer": 0},
+		{ "modelref": "hero", "x": 0, "y": 50, "layer": 0.5},
+		{ "modelref": "Level", "x": 0, "y": 0, "layer": 0},
+		{ "modelref": "Level", "x": 256, "y": 0, "layer": 0},
+		{ "modelref": "Level", "x": 512, "y": 0, "layer": 0},
+		{ "modelref": "CaveEnd", "x": 768, "y": 0, "layer": 0}
 	],
 	"models": [
-		{"name":"hero","image": "john.png"},
-		{"name":"Level", "image": "cave_lamp.png"},
-		{"name":"CaveEntrance", "image": "cave_entrance.png"},
-		{"name":"CaveEnd", "image": "cave_end.png"},
-		{"name":"Box", "image": "box.png"}
+		{
+			"name":"hero",
+			"image": "john.png",
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"10", "width":"40", "height":"64"}
+			]
+		},
+		{
+			"name":"Level",
+			"image": "cave_lamp.png",
+			"dynamic": false,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+			]
+		},
+		{
+			"name":"CaveEntrance", 
+			"image": "cave_entrance.png",
+			"dynamic": false,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+			]
+		},
+		{
+			"name":"CaveEnd",
+			"image": "cave_end.png",
+			"dynamic": false,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+			]
+		},
+		{
+			"name":"Box",
+			"image": "box.png",
+			"dynamic": false,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+			]
+		}
 	]
 }

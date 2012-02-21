@@ -15,8 +15,12 @@ var selection = [];
 var adding = [];
 var map;
 
+var id;
+
 function editor_init() {
-	map = engine_map('data/map.json');
+	map = new Map('data/map.json');
+	map.load('data/map.json');
+	
 	canvas = $('canvas');
 	
 	grid = Grid();
@@ -39,12 +43,14 @@ function editor_resume() {
 	
 	mode = Modes.EDIT;
 	
-	model_editor_main(camera, map.entities);
+	id = setInterval(model_editor_main, 1000/60);
 }
 
 function model_editor_main() {
 	// start game
 	if (keys.get('17') && keys.get('32')) {		
+		clearInterval(id);
+	
 		canvas.onmousemove = null;
 		canvas.onclick = null;
 		canvas.oncontextmenu = null
@@ -53,22 +59,29 @@ function model_editor_main() {
 		document.onkeydown = null;
 		document.onkeyup = null;
 		
-		var game = new Array(map.entities.length-grid.length);
-		var index = 0;
-		map.entities.each(function(entity) {
-			game[index] = entity.clone();
-			index++;
-		});
-		game.editor = editor_resume;
+		var game = map.clone();
 		keys = new Hash();
-		engine_resume(game);
+		new Game(game).start();
 		return;
 	}
+	
+	// calculate physics
+	map.world.Step(1000/30, 8, 3);
+	
+	map.entities.each(function(entity) {
+		if (!entity.body)
+			return;
+	
+		var position = entity.body.GetPosition();
+		entity.x = position.x*37;
+		entity.y = position.y*37;
+	});
 
 	// load models
-	if (map.models.length > 0 && adding.length == 0) {		
-		map.models.each(function(model) {
-			adding.push(Entity(model,0,0,1.1));
+	if (adding.length == 0 && map.models.keys.length > 0) {		
+		map.models.keys.each(function(key) {
+			var model = map.models.get(key);
+			adding.push(new Entity(model, 0, 0, 0, null));
 		});
 	}
 
@@ -192,7 +205,7 @@ function model_editor_main() {
 
 	graphinc_draw(camera, drawable, {"r":0.3,"g":0.3,"b":0.3,"a":1});
 	
-	setTimeout(model_editor_main, 0);
+	//setTimeout(model_editor_main, 10);
 }
 
 function onMouseMove(event) {
@@ -395,11 +408,16 @@ function Grid() {
 	};
 	
 	var grid = [
-		Entity(model.xaxis, 0, 0, -1, 1, 1, {"r":1,"g":1,"b":0,"a":1}),
-		Entity(model.yaxis, 0, 0, -1, 1, 1, {"r":1,"g":1,"b":0,"a":1}),
-		Entity(model.small, 0, 0, -3, 1, 1, {"r":0.5,"g":0.5,"b":0.5,"a":1}),
-		Entity(model.big, 0, 0, -2, 1, 1, {"r":0.6,"g":0.6,"b":0.6,"a":1})
+		Entity(model.xaxis, 0, 0, -1, false),
+		Entity(model.yaxis, 0, 0, -1, false),
+		Entity(model.small, 0, 0, -3, false),
+		Entity(model.big, 0, 0, -2, false)
 	];
+	
+	grid[0].color = {"r":1,"g":1,"b":0,"a":1};
+	grid[1].color = {"r":1,"g":1,"b":0,"a":1};
+	grid[2].color = {"r":0.5,"g":0.5,"b":0.5,"a":1};
+	grid[3].color = {"r":0.6,"g":0.6,"b":0.6,"a":1};
 	
 	return grid;
 }
