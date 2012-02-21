@@ -11,6 +11,41 @@ function engine_resume(game) {
 		keys[event.keyCode.toString()] = false;
 	};
 	
+	// world
+	var gravity = new b2Vec2(0, -9.81);
+	var doSleep = true;
+	game.world = new b2World(gravity, doSleep);
+	
+	// ground
+	var groundBodyDef = new b2BodyDef();
+	groundBodyDef.position.Set(0.0, -200);
+	var groundBody = game.world.CreateBody(groundBodyDef);
+	
+	var groundBox = new b2PolygonShape();
+	groundBox.SetAsBox(50.0, 10.0);
+	
+	var groundFixtureDef = new b2FixtureDef();
+	groundFixtureDef.shape = groundBox;
+	groundFixtureDef.density = 1.0;
+	groundFixtureDef.friction = 0.3;
+	groundBody.CreateFixture(groundFixtureDef);
+	
+	// dynamic body
+	var bodyDef = new b2BodyDef();
+	bodyDef.type = b2Body.b2_dynamicBody;
+	bodyDef.position.Set(0.0, 4.0);
+	game.body = game.world.CreateBody(bodyDef);
+	
+	var dynamicBox = new b2PolygonShape();
+	dynamicBox.SetAsBox(1.0, 1.0);
+	
+	var fixtureDef = new b2FixtureDef();
+	fixtureDef.shape = dynamicBox;
+	fixtureDef.density = 1.0;
+	fixtureDef.friction = 0.3;
+	game.body.CreateFixture(fixtureDef);
+	game.body.SetAngle(1.5);
+	
 	engine_main(game);
 }
 
@@ -19,6 +54,8 @@ function engine_main(map) {
 		editor_resume();
 		return;
 	}
+	
+	map.world.Step(1000/60, 8, 3);
 
 	var camera = {'x': 0, 'y': 0, 'zoom': 2};
 	
@@ -29,11 +66,16 @@ function engine_main(map) {
 			if (keys['83']) entity.y -= 6;
 			if (keys['68']) entity.x += 6;
 			
+			var position = map.body.GetPosition();
+			entity.x = position.x;
+			entity.y = position.y;
+			
 			camera.x = entity.x;
 			camera.y = entity.y;
 			throw $break;
 		}
 	});
+	
 
 	graphinc_draw(camera, map, {"r":0,"g":0,"b":0,"a":1});
 	setTimeout(engine_main, 0, map);
