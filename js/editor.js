@@ -11,21 +11,19 @@ var keys = new Hash();
 var Modes = {EDIT:0,MOVE:1,ADD:2};
 var mode = Modes.EDIT;
 var grid;
-var selection = [];
 var adding = [];
 var map;
 
 var id;
 
 function editor_init() {
-	map = new Map('data/map.json');
+	map = new Map();
 	map.load('data/map.json');
 	
 	canvas = $('canvas');
 	
 	grid = Grid();
 	
-	textureWhite = graphic_texture_solid(255,255,255,255);
 	frameMesh = Frame();
 	
 	editor_resume();
@@ -67,22 +65,13 @@ function model_editor_main() {
 	
 	// calculate physics
 	map.world.Step(1000/30, 8, 3);
-	
-	map.entities.each(function(entity) {
-		if (!entity.body)
-			return;
-	
-		var position = entity.body.GetPosition();
-		entity.x = position.x*37;
-		entity.y = position.y*37;
-	});
 
 	// load models
 	if (adding.length == 0 && map.models.keys.length > 0) {		
-		map.models.keys.each(function(key) {
+		/*map.models.keys.each(function(key) {
 			var model = map.models.get(key);
 			adding.push(new Entity(model, 0, 0, 0, null));
-		});
+		});*/
 	}
 
 	// camera moving
@@ -101,12 +90,10 @@ function model_editor_main() {
 	}
 	
 	// set grid
-	grid[0].x = camera.x;
-	grid[1].y = camera.y;
-	grid[2].x = camera.x-(camera.x % 100);
-	grid[2].y = camera.y-(camera.y % 100);
-	grid[3].x = camera.x-(camera.x % 100);
-	grid[3].y = camera.y-(camera.y % 100);
+	grid[0].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
+	grid[1].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
+	grid[2].body.SetPosition(new b2Vec2(pixelInMeter(camera.x), 0));
+	grid[3].body.SetPosition(new b2Vec2(0, camera.y));
 	
 	// change into adding mode
 	if (keys.get('32')) {
@@ -199,13 +186,38 @@ function model_editor_main() {
 		}
 	}
 	
-	var drawable = map.entities.concat(selection.concat(grid));
-	if (mode == Modes.ADD)
-		drawable = drawable.concat(adding);
-
-	graphinc_draw(camera, drawable, {"r":0.3,"g":0.3,"b":0.3,"a":1});
+	// draw
+	graphic_clear({"r":0.3,"g":0.3,"b":0.3,"a":1});
+	graphic_load_projection(camera.zoom);
 	
-	//setTimeout(model_editor_main, 10);
+	grid.each(function(entity) {
+		var position = entity.body.GetPosition();
+		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.width, entity.height);
+	});
+	
+	map.entities.sort(function (a, b) {	return a.layer - b.layer; });
+	map.entities.each(function(entity) {
+		var position = entity.body.GetPosition();
+		if (!entity.width) entity.width = entity.model.texture.width;
+		if (!entity.height) entity.height = entity.model.texture.height;
+		if (!entity.width || !entity.height) return;
+		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.width, entity.height);
+	});
+	
+	map.entities.each(function(entity) {
+		if (!entity.selection) 
+			return;
+		var position = entity.body.GetPosition();
+		graphic_render_mesh(frameMesh, {"r":1,"g":1,"b":0,"a":1}, null, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.width, entity.width);
+	});
+	
+	if (mode == Modes.ADD) {
+		adding.each(function(entity) {
+			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.width, entity.height);
+		});
+	}
+	
+
 }
 
 function onMouseMove(event) {
@@ -221,29 +233,27 @@ function onClick(event) {
 			map.entities.each(function(entity) {
 				if (entity.selection)
 					return;
-				if (Math.abs(entity.x - mouse.x) <= entity.width/2 &&
-					Math.abs(entity.y - mouse.y) <= entity.height/2 &&
+				var position = entity.body.GetPosition();
+				if (Math.abs(meterInPixel(position.x) - mouse.x) <= entity.width/2 &&
+					Math.abs(meterInPixel(position.y) - mouse.y) <= entity.height/2 &&
 					(!target || entity.layer >= target.layer)) {
 					target = entity;
 				}
 			});
 			
 			if (!keys.get('17')) {
-				selection.each(function(entity) {
-					delete entity.target.selection;
-					delete entity.target.oldx;
-					delete entity.target.oldy;
+				map.entities.each(function(entity) {
+					delete entity.selection;
+					delete entity.oldx;
+					delete entity.oldy;
 				});
-				selection.length = 0;
 			}
 			
 			if (target) {
-				var frame = Entity(frameMesh, target.x, target.y, 2, target.width, target.height, {"r":1,"g":1,"b":0,"a":1});
-				frame.target = target;
-				target.selection = frame;
-				target.oldx = target.x;
-				target.oldy = target.y;
-				selection.push(frame);
+				var position = target.body.GetPosition();
+				target.selection = true;
+				target.oldx = position.x;
+				target.oldy = position.y;
 			}
 			break;
 		}
@@ -259,7 +269,7 @@ function onClick(event) {
 			break;
 		}
 		case Modes.ADD: {		
-			adding.each(function(entity) {
+			/*adding.each(function(entity) {
 				if (Math.abs(entity.x - mouse.x) < entity.width/2 && 
 					Math.abs(entity.y - mouse.y) < entity.height/2) {
 					selection.each(function(entity) {
@@ -280,7 +290,7 @@ function onClick(event) {
 					mode = Modes.MOVE;
 					throw $break;
 				}
-			});
+			});*/
 			break;
 		}
 	}
@@ -384,49 +394,29 @@ function Grid() {
 			big_grid_indices[i] = i;
 	}
 	
-	var model = {
-		"xaxis": {
-			"name": "_xaxis",
-			"mesh": graphic_mesh(gl.LINES, xaxis_vertices, null, xaxis_indices),
-			"texture": textureWhite
-		},
-		"yaxis": {
-			"name": "_yaxis",
-			"mesh": graphic_mesh(gl.LINES, yaxis_vertices, null, yaxis_indices),
-			"texture": textureWhite
-		},
-		"small": {
-			"name": "_smallgrid",
-			"mesh": graphic_mesh(PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices),
-			"texture": textureWhite
-		},
-		"big": {
-			"name": "_biggrid",
-			"mesh": graphic_mesh(PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices),
-			"texture": textureWhite
-		}
-	};
+	var xaxis = new Model('_axis', 'white', new Mesh(PRIMITIVE.LINES, xaxis_vertices, null, xaxis_indices));
+	var yaxis = new Model('_yaxis', 'white', new Mesh(PRIMITIVE.LINES, yaxis_vertices, null, yaxis_indices));
+	var small = new Model('_smallgrid', 'white', new Mesh(PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices));
+	var big = new Model('_biggrid', 'white', new Mesh(PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices));
 	
 	var grid = [
-		Entity(model.xaxis, 0, 0, -1, false),
-		Entity(model.yaxis, 0, 0, -1, false),
-		Entity(model.small, 0, 0, -3, false),
-		Entity(model.big, 0, 0, -2, false)
+		new Entity(map.world, small, 0, 0, -3),
+		new Entity(map.world, big, 0, 0, -2),
+		new Entity(map.world, xaxis, 0, 0, -1),
+		new Entity(map.world, yaxis, 0, 0, -1)
 	];
 	
-	grid[0].color = {"r":1,"g":1,"b":0,"a":1};
-	grid[1].color = {"r":1,"g":1,"b":0,"a":1};
-	grid[2].color = {"r":0.5,"g":0.5,"b":0.5,"a":1};
-	grid[3].color = {"r":0.6,"g":0.6,"b":0.6,"a":1};
+	grid[0].color = {"r":0.5,"g":0.5,"b":0.5,"a":1};
+	grid[1].color = {"r":0.6,"g":0.6,"b":0.6,"a":1};
+	grid[2].color = {"r":1,"g":1,"b":0,"a":1};
+	grid[3].color = {"r":1,"g":1,"b":0,"a":1};
 	
 	return grid;
 }
 
-function Frame(entity) {
+function Frame() {
 	var vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
 	var indices = [0, 1, 1, 3, 3, 2, 2, 0];
-	var mesh = graphic_mesh(PRIMITIVE.LINES, vertices, null, indices);
-	
-	var model = {"name": "_frame", "mesh": mesh, "texture": textureWhite };
-	return model;
+	var mesh = new Mesh(PRIMITIVE.LINES, vertices, null, indices);
+	return mesh;
 }
