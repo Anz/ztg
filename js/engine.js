@@ -1,24 +1,24 @@
+var keys = new Hash();
+
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
-		this.keys = new Hash();
 	},
-	start: function() {	
-		var obj = this;
+	start: function() {
 		document.onkeydown = function (event) {
 			if(event.altKey && event.keyCode != 18) alert(event.keyCode);
-			obj.keys.set(event.keyCode.toString(), true);
+			keys.set(event.keyCode.toString(), true);
 		};
 		
 		document.onkeyup = function (event) {
-			obj.keys.unset(event.keyCode.toString());
+			keys.unset(event.keyCode.toString());
 		};
 		
 		var game = this;
 		this.intervalId = setInterval(function(){ game.main(); }, 1000/60);
 	},
 	main: function () {
-		if (this.keys.get('27')) {
+		if (keys.get('27')) {
 			clearInterval(this.intervalId);
 			editor_resume();
 			return;
@@ -31,9 +31,9 @@ var Game = Class.create({
 		
 		this.map.entities.each(function(entity) {		
 			if (entity.model.name == 'hero') {
-				if (this.keys.get('65')) entity.body.ApplyImpulse(new b2Vec2(-10,10), entity.body.GetWorldCenter());
-				if (this.keys.get('68')) entity.body.ApplyImpulse(new b2Vec2(100,10), entity.body.GetWorldCenter());
-				if (this.keys.get('32')) entity.body.ApplyImpulse(new b2Vec2(0,200), entity.body.GetWorldCenter());
+				if (keys.get('65')) entity.body.ApplyImpulse(new b2Vec2(-1,0), entity.body.GetWorldCenter());
+				if (keys.get('68')) entity.body.ApplyImpulse(new b2Vec2(1,0), entity.body.GetWorldCenter());
+				if (keys.get('32')) entity.body.ApplyImpulse(new b2Vec2(0,200), entity.body.GetWorldCenter());
 				var position = entity.body.GetPosition();
 				camera.x = meterInPixel(position.x);
 				camera.y = meterInPixel(position.y);

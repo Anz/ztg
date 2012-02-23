@@ -11,7 +11,7 @@ var keys = new Hash();
 var Modes = {EDIT:0,MOVE:1,ADD:2};
 var mode = Modes.EDIT;
 var grid;
-var adding = [];
+var models;
 var map;
 
 var id;
@@ -64,13 +64,35 @@ function model_editor_main() {
 	}
 	
 	// calculate physics
-	map.world.Step(1000/30, 8, 3);
+	if (mode != Modes.MOVE)
+		map.world.Step(1000/30, 8, 3);
 
 	// load models
-	if (adding.length == 0 && map.models.keys.length > 0) {		
-		/*map.models.keys.each(function(key) {
+	if (!models && map.models.keys().length > 0) {
+		models = new Map();
+		/*map.models.keys().each(function(key, i) {
 			var model = map.models.get(key);
-			adding.push(new Entity(model, 0, 0, 0, null));
+						
+			var frame_per_line = 3;
+			var framesize = 128;
+			var framespace = framesize + 30;
+			
+		
+			var x = (i % frame_per_line) - Math.floor(frame_per_line / 2);
+			var y = Math.floor(i / frame_per_line);
+			
+			var entity = new Entity(models.world, model, 0, 0, 0);
+			
+			entity.y = -y * framespace / camera.zoom + camera.y;
+			entity.x = x * framespace * Math.max(1, 1-Math.abs(entity.y)/480) / camera.zoom + camera.x;
+			var sizeFactor = Math.min(1, Math.min(framesize / entity.model.texture.width, framesize / entity.model.texture.height)) / camera.zoom;
+			entity.width = entity.model.texture.width*sizeFactor;
+			entity.height = entity.model.texture.height*sizeFactor;
+			entity.layer = 3;
+			entity.color = { "r":1,"g":1,"b":1,"a":1};
+			
+			models.entities.push(entity);
+		}
 		});*/
 	}
 
@@ -93,7 +115,7 @@ function model_editor_main() {
 	grid[0].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
 	grid[1].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
 	grid[2].body.SetPosition(new b2Vec2(pixelInMeter(camera.x), 0));
-	grid[3].body.SetPosition(new b2Vec2(0, camera.y));
+	grid[3].body.SetPosition(new b2Vec2(0, pixelInMeter(camera.y)));
 	
 	// change into adding mode
 	if (keys.get('32')) {
@@ -101,27 +123,35 @@ function model_editor_main() {
 	}
 	
 	// change into moving mode
-	if (keys.get('89') && selection.length > 0) {
-		mode = Modes.MOVE;
+	if (keys.get('89')) {
+		var count = 0;
+		map.entities.each(function(entity) {
+			if (!entity.selection)
+				return;
+			entity.oldPosition = entity.body.GetPosition();
+			count++;
+		});
+		if (count > 0)
+			mode = Modes.MOVE;
 	}
 	
 	// delete selection
-	if (keys.get('88')) {
-		selection.each(function(entity) {
-			map.entities = map.entities.without(entity.target);
+	if (keys.get('46')) {
+		map.entities.each(function(entity) {
+			if (!entity.selection)
+				return;
+			entity.destroy();
+			map.entities = map.entities.without(entity);
 		});
-		selection.length = 0;
 	}
 	
-	// moving adding elements along the cursor
+	// moving models along
 	if (mode == Modes.ADD) {
 		var frame_per_line = 3;
 		var framesize = 128;
 		var framespace = framesize + 30;
 		
-		for (var i=0; i<adding.length; i++) {
-			var entity = adding[i];
-			
+		models.entities.each(function(entity) {
 			var x = (i % frame_per_line) - Math.floor(frame_per_line / 2);
 			var y = Math.floor(i / frame_per_line);
 			
@@ -132,57 +162,68 @@ function model_editor_main() {
 			entity.height = entity.model.texture.height*sizeFactor;
 			entity.layer = 3;
 			entity.color = { "r":1,"g":1,"b":1,"a":1};
-		}
+		});
 	}
 	
 	// moving selection along the cursor
-	if (mode == Modes.MOVE && selection.length > 0) {
+	if (mode == Modes.MOVE) {
 		var target = getSpacePosition(mouse);
 		
-		var average = {"x":0,"y":0};
-		selection.each(function(entity) {
-			average.x += entity.x;
-			average.y += entity.y;
+		var center = {"x":0,"y":0};
+		var count = 0;
+		map.entities.each(function(entity) {
+			if (!entity.selection)
+				return;
+			var position = entity.body.GetPosition();
+			center.x += position.x;
+			center.y += position.y;
+			count++;
 		});
-		average.x /= selection.length;
-		average.y /= selection.length;
-		
-		
-		selection.each(function(entity) {
-			entity.x += target.x - average.x;
-			entity.y += target.y - average.y;
-			entity.target.x = entity.x;
-			entity.target.y = entity.y;
-		});
-		
-		var dist = {}
-		selection.each(function(element) {
+		if (count > 0) {
+			center.x /= count;
+			center.y /= count;
+			
+			
 			map.entities.each(function(entity) {
-				if (entity.target)
-					return;			
-				var distx = Math.abs(entity.x - element.target.x) - (entity.width + element.target.width) / 2;
-				var disty = Math.abs(entity.y - element.target.y) - (entity.height + element.target.height) / 2;
-				if (Math.abs(distx) <= 10 && disty < 0 && (!dist.x || Math.abs(distx) < Math.abs(dist.x))) {
-					if (entity.x < element.target.x) distx = -distx;
-					dist.x = distx;
-				}
-				if (Math.abs(disty) <= 10 && distx < 0 && (!dist.y || Math.abs(disty) < Math.abs(dist.y))) {
-					if (entity.y < element.target.y) disty = -disty;
-					dist.y = disty;
-				}
+				if (!entity.selection)
+					return;
+				var position = entity.body.GetPosition();
+				position.x += pixelInMeter(target.x) - center.x;
+				position.y += pixelInMeter(target.y) - center.y;
+				entity.body.SetPosition(position);
 			});
-		});
-		if (dist.x) {
-			selection.each(function(entity) {
-					entity.x += dist.x;
-					entity.target.x = entity.x;
+			
+			/*var dist = {}
+			selection.each(function(element) {
+				map.entities.each(function(entity) {
+					if (entity.target)
+						return;			
+					var distx = Math.abs(entity.x - element.target.x) - (entity.width + element.target.width) / 2;
+					var disty = Math.abs(entity.y - element.target.y) - (entity.height + element.target.height) / 2;
+					if (Math.abs(distx) <= 10 && disty < 0 && (!dist.x || Math.abs(distx) < Math.abs(dist.x))) {
+						if (entity.x < element.target.x) distx = -distx;
+						dist.x = distx;
+					}
+					if (Math.abs(disty) <= 10 && distx < 0 && (!dist.y || Math.abs(disty) < Math.abs(dist.y))) {
+						if (entity.y < element.target.y) disty = -disty;
+						dist.y = disty;
+					}
+				});
 			});
-		}
-		if (dist.y) {
-			selection.each(function(entity) {
-					entity.y += dist.y;
-					entity.target.y = entity.y;
-			});
+			if (dist.x) {
+				selection.each(function(entity) {
+						entity.x += dist.x;
+						entity.target.x = entity.x;
+				});
+			}
+			if (dist.y) {
+				selection.each(function(entity) {
+						entity.y += dist.y;
+						entity.target.y = entity.y;
+				});
+			}*/
+		} else {
+			mode = Modes.EDIT;
 		}
 	}
 	
@@ -204,6 +245,7 @@ function model_editor_main() {
 		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.width, entity.height);
 	});
 	
+	// draw selection
 	map.entities.each(function(entity) {
 		if (!entity.selection) 
 			return;
@@ -241,13 +283,8 @@ function onClick(event) {
 				}
 			});
 			
-			if (!keys.get('17')) {
-				map.entities.each(function(entity) {
-					delete entity.selection;
-					delete entity.oldx;
-					delete entity.oldy;
-				});
-			}
+			if (!keys.get('17'))
+				clearSelection();
 			
 			if (target) {
 				var position = target.body.GetPosition();
@@ -259,12 +296,12 @@ function onClick(event) {
 		}
 	
 		case Modes.MOVE: {
-			selection.each(function(entity) {
-				delete entity.target.selection;
-				delete entity.target.oldx;
-				delete entity.target.oldy;
+			map.entities.each(function(entity) {
+				delete entity.selection;
+				delete entity.oldx;
+				delete entity.oldy;
+				entity.body.SetAwake(true);
 			});
-			selection.length = 0;
 			mode = Modes.EDIT;
 			break;
 		}
@@ -299,15 +336,15 @@ function onClick(event) {
 
 function onRightClick(event) {
 	// dropping selection and change back to edit
-	selection.each(function(entity) {
-		if (typeof entity.target.oldx != "undefined" && typeof entity.target.oldy != "undefined") {
-			entity.target.x = entity.target.oldx;
-			entity.target.y = entity.target.oldy;
-			entity.x = entity.target.x;
-			entity.y = entity.target.y;
+	map.entities.each(function(entity) {
+		if (!entity.selection)
+			return;
+		if (entity.oldPosition) {
+			entity.body.SetPosition(entity.oldPosition);
+			delete entity.oldPosition;
 		} else {
-			map.entities = map.entities.without(entity.target);
-			selection = selection.without(entity);
+			entity.destory();
+			map.entities = map.entities.without(entity);
 		}
 	});
 	mode = Modes.EDIT;
@@ -330,6 +367,14 @@ function onMouseWheel(event) {
 			break;
 		}
 	}
+}
+
+function clearSelection() {
+	map.entities.each(function(entity) {
+		delete entity.selection;
+		delete entity.oldx;
+		delete entity.oldy;
+	});
 }
 
 function getViewPosition(e) {
