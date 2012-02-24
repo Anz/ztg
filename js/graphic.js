@@ -30,7 +30,7 @@ function graphic_clear(background) {
 	gl.clearColor(background.r, background.g, background.b, background.a);
 	gl.clear(gl.COLOR_BUFFER_BIT);
 }
-
+/*
 function graphinc_draw(camera, entities) {
 	if (!gl) {
 		graphic_init();
@@ -51,11 +51,11 @@ function graphinc_draw(camera, entities) {
 		if (!entity.height) entity.height = entity.model.texture.height;
 		if (!entity.width || !entity.height) continue;
 		
-		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.width, entity.height);
+		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, entity.x-camera.x, entity.y-camera.y, entity.layer, entity.width, entity.height);
 	}	
 }
-
-function graphic_render_mesh(mesh, color, texture, x, y, width, height) {
+*/
+function graphic_render_mesh(mesh, color, texture, x, y, layer, angle, width, height) {
 	// settings
 	gl.enable(gl.BLEND);
 	gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
@@ -66,6 +66,9 @@ function graphic_render_mesh(mesh, color, texture, x, y, width, height) {
 		0,   0,   1,  0,
 		x,   y,   0,    1
 	];
+	
+	// set uniforms
+	gl.uniform4f(program.position, x, y, layer, angle);
 	
 	gl.uniformMatrix4fv(program.modelMatrix, false, modelMatrix);
 	gl.uniform4f(program.color, color.r, color.g, color.b, color.a);
@@ -179,6 +182,7 @@ function graphic_shader(vertexUrl, fragmentUrl) {
 						program.vertexPosition = gl.getAttribLocation(program, "vertexPosition");						
 						program.textureCoord = gl.getAttribLocation(program, "textureCoord");						
 						program.modelMatrix = gl.getUniformLocation(program, "modelMatrix");
+						program.position = gl.getUniformLocation(program, "uPosition");
 						program.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix");
 						program.color = gl.getUniformLocation(program, "uColor");
 						program.sampler = gl.getUniformLocation(program, "sampler");

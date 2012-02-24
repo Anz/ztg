@@ -33,7 +33,10 @@ var Game = Class.create({
 			if (entity.model.name == 'hero') {
 				if (keys.get('65')) entity.body.ApplyImpulse(new b2Vec2(-1,0), entity.body.GetWorldCenter());
 				if (keys.get('68')) entity.body.ApplyImpulse(new b2Vec2(1,0), entity.body.GetWorldCenter());
-				if (keys.get('32')) entity.body.ApplyImpulse(new b2Vec2(0,200), entity.body.GetWorldCenter());
+				if (keys.get('32')) {
+					entity.body.ApplyForce(new b2Vec2(0,18), entity.body.GetWorldCenter());
+					keys.unset('32');
+				}
 				var position = entity.body.GetPosition();
 				camera.x = meterInPixel(position.x);
 				camera.y = meterInPixel(position.y);
@@ -47,10 +50,11 @@ var Game = Class.create({
 		this.map.entities.sort(function (a, b) { return a.layer - b.layer; });
 		this.map.entities.each(function(entity) {
 			var position = entity.body.GetPosition();
+			var angle = entity.body.GetAngle();
 			if (!entity.width) entity.width = entity.model.texture.width;
 			if (!entity.height) entity.height = entity.model.texture.height;
 			if (!entity.width || !entity.height) return;
-			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.width, entity.height);
+			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
 		});
 		
 		//graphinc_draw(camera, this.map.entities, {"r":0,"g":0,"b":0,"a":1});
@@ -140,7 +144,7 @@ var Entity = Class.create({
 			
 			var fixtureDef = new b2FixtureDef();
 			fixtureDef.shape = shapeDef;
-			fixtureDef.density = 1.0;
+			fixtureDef.density = 1;
 			fixtureDef.friction = 0.3;
 			body.CreateFixture(fixtureDef);
 		});
