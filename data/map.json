@@ -11,33 +11,31 @@
 		{
 			"name":"hero",
 			"image": "john.png",
+			"fixedRotation": true,
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"10", "width":"40", "height":"64"}
+				{"type":"box", "x":"0", "y":"10", "width":"40", "height":"64", "friction":0.01}
 			]
 		},
 		{
 			"name":"Level",
 			"image": "cave_lamp.png",
-			"dynamic": false,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"40", "friction":0.1}
 			]
 		},
 		{
 			"name":"CaveEntrance", 
 			"image": "cave_entrance.png",
-			"dynamic": false,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"40", "friction":0.1}
 			]
 		},
 		{
 			"name":"CaveEnd",
 			"image": "cave_end.png",
-			"dynamic": false,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"20"}
+				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"40", "friction":0.1}
 			]
 		},
 		{

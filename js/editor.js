@@ -249,6 +249,7 @@ function onClick(event) {
 		}
 	
 		case Modes.MOVE: {
+			map.world.ClearForces();
 			map.entities.each(function(entity) {
 				delete entity.selection;
 				delete entity.oldx;

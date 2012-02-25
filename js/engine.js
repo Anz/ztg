@@ -31,8 +31,8 @@ var Game = Class.create({
 		
 		this.map.entities.each(function(entity) {		
 			if (entity.model.name == 'hero') {
-				if (keys.get('65')) entity.body.ApplyImpulse(new b2Vec2(-1,0), entity.body.GetWorldCenter());
-				if (keys.get('68')) entity.body.ApplyImpulse(new b2Vec2(1,0), entity.body.GetWorldCenter());
+				if (keys.get('65') && entity.body.GetLinearVelocity().x > -80) entity.body.ApplyImpulse(new b2Vec2(-10,0), entity.body.GetWorldCenter());
+				if (keys.get('68') && entity.body.GetLinearVelocity().x < 80) entity.body.ApplyImpulse(new b2Vec2(10,0), entity.body.GetWorldCenter());
 				if (keys.get('32')) {
 					entity.body.ApplyForce(new b2Vec2(0,18), entity.body.GetWorldCenter());
 					keys.unset('32');
@@ -132,6 +132,8 @@ var Entity = Class.create({
 	
 		// physical body
 		var bodyDef = new b2BodyDef();
+		if (model.fixedRotation)
+			bodyDef.fixedRotation = true;
 		if (model.dynamic) 
 			bodyDef.type = b2Body.b2_dynamicBody;
 		bodyDef.position.Set(pixelInMeter(x), pixelInMeter(y));
@@ -144,8 +146,9 @@ var Entity = Class.create({
 			
 			var fixtureDef = new b2FixtureDef();
 			fixtureDef.shape = shapeDef;
-			fixtureDef.density = 1;
-			fixtureDef.friction = 0.3;
+			fixtureDef.restitution = typeof shape.restitution != 'undefined' ? shape.restitution : 0;
+			fixtureDef.density = typeof shape.density != 'undefined' ? shape.density : 1;
+			fixtureDef.friction = typeof shape.friction != 'undefined' ? shape.friction : 0.3;
 			body.CreateFixture(fixtureDef);
 		});
 	},
@@ -160,6 +163,7 @@ var Model = Class.create({
 		this.image = image;
 		this.texture = graphic_texture(image);
 		this.mesh = mesh;
+		this.fixedRotation = false;
 		this.dynamic = false;
 		this.shapes = [];
 	}
