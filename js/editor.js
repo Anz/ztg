@@ -65,7 +65,7 @@ function model_editor_main() {
 	
 	// calculate physics
 	if (mode != Modes.MOVE)
-		map.world.Step(1000/30, 8, 3);
+		map.world.Step(1000/60, 8, 3);
 
 	// load models
 	if (!models && map.models.keys().length > 0) {

@@ -1,8 +1,12 @@
 var keys = new Hash();
 
+var Render;
+
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
+		if (!Render)
+			Render = new Renderer($('canvas'));
 	},
 	start: function() {
 		document.onkeydown = function (event) {
@@ -56,8 +60,6 @@ var Game = Class.create({
 			if (!entity.width || !entity.height) return;
 			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
 		});
-		
-		//graphinc_draw(camera, this.map.entities, {"r":0,"g":0,"b":0,"a":1});
 	}
 });
 
@@ -66,6 +68,9 @@ var Map = Class.create({
 		this.entities = [];
 		this.models = new Hash();
 		this.world = new b2World(new b2Vec2(0, -9.81), true);
+		
+		if (!Render)
+			Render = new Renderer($('canvas'));
 	},
 	load: function(url) {
 		var models = this.models;
@@ -76,7 +81,7 @@ var Map = Class.create({
 		var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
 		var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
 		var sprite_indices = [0, 1, 2, 2, 1, 3];
-		var sprite = new Mesh(PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
+		var sprite = Render.createMesh(Render.PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
 		
 		new Ajax.Request(url, {
 			method:'get',
