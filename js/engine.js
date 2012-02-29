@@ -18,6 +18,8 @@ var Game = Class.create({
 			keys.unset(event.keyCode.toString());
 		};
 		
+		Render.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
+		
 		var game = this;
 		this.intervalId = setInterval(function(){ game.main(); }, 1000/60);
 	},
@@ -48,8 +50,7 @@ var Game = Class.create({
 		});
 	
 		// draw
-		graphic_clear({"r":0,"g":0,"b":0,"a":1});
-		graphic_load_projection(camera.zoom);
+		Render.clear();
 		
 		this.map.entities.sort(function (a, b) { return a.layer - b.layer; });
 		this.map.entities.each(function(entity) {
@@ -58,7 +59,7 @@ var Game = Class.create({
 			if (!entity.width) entity.width = entity.model.texture.width;
 			if (!entity.height) entity.height = entity.model.texture.height;
 			if (!entity.width || !entity.height) return;
-			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
+			Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
 		});
 	}
 });
@@ -68,9 +69,6 @@ var Map = Class.create({
 		this.entities = [];
 		this.models = new Hash();
 		this.world = new b2World(new b2Vec2(0, -9.81), true);
-		
-		if (!Render)
-			Render = new Renderer($('canvas'));
 	},
 	load: function(url) {
 		var models = this.models;
@@ -93,7 +91,7 @@ var Map = Class.create({
 				// load models
 				file.models.each(function(model) {
 					model.mesh = sprite;
-					model.texture = graphic_texture(model.image);
+					model.texture = Render.loadTexture(model.image);
 					models.set(model.name, model);
 				});
 				
@@ -166,7 +164,7 @@ var Model = Class.create({
 	initialize: function(name, image, mesh) {
 		this.name = name;
 		this.image = image;
-		this.texture = graphic_texture(image);
+		this.texture = Render.loadTexture(image);
 		this.mesh = mesh;
 		this.fixedRotation = false;
 		this.dynamic = false;

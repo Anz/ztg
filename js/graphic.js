@@ -1,4 +1,4 @@
-var Render = Class.create({
+var Renderer = Class.create({
 	initialize: function(canvas) {
 		this.canvas = canvas;
 		this.gl = canvas.getContext("experimental-webgl");
@@ -10,55 +10,55 @@ var Render = Class.create({
 			return;
 		}
 	
-		this.program = graphic_shader('shader/vertex.vs', 'shader/fragment.fs');
-		this.images.set('white', graphic_texture_solid(255,255,255,255));
+		this.program = this.loadShader('shader/vertex.vs', 'shader/fragment.fs');
+		this.images.set('white', this.createTexture(255,255,255,255));
 	},
 	clear: function clear(color) {
 		this.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
-		this.gl.clear(gl.COLOR_BUFFER_BIT);
+		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 	},
-	draw: function draw(mesh, color, texture, x, y, layer, angle, width, height) {
+	draw: function draw(mesh, zoom, color, texture, x, y, layer, angle, width, height) {
 		// settings
-		this.gl.enable(gl.BLEND);
-		this.gl.blendFunc(gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
+		this.gl.enable(this.gl.BLEND);
+		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 		
 		// set uniforms
-		this.gl.uniform3f(program.position, x, y, layer);
-		this.gl.uniform1f(program.rotation, angle);
-		this.gl.uniform2f(program.size, width, height);
+		this.gl.uniform3f(this.program.camera, this.canvas.width, this.canvas.height, zoom);
+		this.gl.uniform3f(this.program.position, x, y, layer);
+		this.gl.uniform1f(this.program.rotation, angle);
+		this.gl.uniform2f(this.program.size, width, height);
 		
-		this.gl.uniform4f(program.color, color.r, color.g, color.b, color.a);
+		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
 		
 		// vertices
-		this.gl.bindBuffer(gl.ARRAY_BUFFER, mesh.vertices);
-		this.gl.enableVertexAttribArray(program.vertexPosition);
-		this.gl.vertexAttribPointer(program.vertexPosition, 2, this.gl.FLOAT, false, 0, 0);
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.vertices);
+		this.gl.enableVertexAttribArray(this.program.vertexPosition);
+		this.gl.vertexAttribPointer(this.program.vertexPosition, 2, this.gl.FLOAT, false, 0, 0);
 
 		// texture
-		this.gl.bindBuffer(gl.ARRAY_BUFFER, mesh.textureCoords);
-		this.gl.enableVertexAttribArray(program.textureCoord);
-		this.gl.vertexAttribPointer(program.textureCoord, 2, this.gl.FLOAT, false, 0, 0);
+		this.gl.bindBuffer(this.gl.ARRAY_BUFFER, mesh.textureCoords);
+		this.gl.enableVertexAttribArray(this.program.textureCoord);
+		this.gl.vertexAttribPointer(this.program.textureCoord, 2, this.gl.FLOAT, false, 0, 0);
 
 		if (!texture)
-			texture = graphic_texture('white');
-		this.gl.activeTexture(gl.TEXTURE0);
-		this.gl.bindTexture(gl.TEXTURE_2D, texture);
-		this.gl.uniform1i(program.sampler, 0);
+			texture = this.loadTexture('white');
+		this.gl.activeTexture(this.gl.TEXTURE0);
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		this.gl.uniform1i(this.program.sampler, 0);
 
 		// indices
-		this.gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
 		
 		// draw the buffer
-		this.gl.drawElements(mesh.type, mesh.num_indices, gl.UNSIGNED_SHORT, 0);
+		this.gl.drawElements(mesh.type, mesh.num_indices, this.gl.UNSIGNED_SHORT, 0);
 	},
 	createMesh: function(type, vertices, textureCoords, indices) {
 		// mesh
-		var mesh;
+		var mesh = {};
 	
-		var glType;
 		switch (type) {
-			case PRIMITIVE.TRIANGLES: glType = this.gl.TRIANGLES; break;
-			case PRIMITIVE.LINES: glType = this.gl.LINES; break;
+			case this.PRIMITIVE.TRIANGLES: mesh.type = this.gl.TRIANGLES; break;
+			case this.PRIMITIVE.LINES: mesh.type = this.gl.LINES; break;
 			default: alert('Not supported mesh type: ' + type);
 		}
 
@@ -77,12 +77,14 @@ var Render = Class.create({
 		this.gl.bufferData(this.gl.ARRAY_BUFFER, new Float32Array(textureCoords), this.gl.STATIC_DRAW);
 		
 		// index
-		var glIndices = gl.createBuffer();
-		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, glIndices);
+		mesh.indices = this.gl.createBuffer();
+		this.gl.bindBuffer(this.gl.ELEMENT_ARRAY_BUFFER, mesh.indices);
 		this.gl.bufferData(this.gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), this.gl.STATIC_DRAW);
 		
 		mesh.num_indices = indices.length;
 		mesh.num_vertices = vertices.length;
+		
+		return mesh;
 	},
 	loadShader: function(vertexUrl, fragmentUrl) {
 		var gl = this.gl;
@@ -133,6 +135,7 @@ var Render = Class.create({
 							program.vertexPosition = gl.getAttribLocation(program, "vertexPosition");						
 							program.textureCoord = gl.getAttribLocation(program, "textureCoord");
 							program.projectionMatrix = gl.getUniformLocation(program, "projectionMatrix");
+							program.camera = gl.getUniformLocation(program, "uCamera");
 							program.position = gl.getUniformLocation(program, "uPosition");
 							program.rotation = gl.getUniformLocation(program, "uRotation");
 							program.size = gl.getUniformLocation(program, "uSize");
@@ -155,7 +158,7 @@ var Render = Class.create({
 	},
 	loadTexture: function (name) {
 		var gl = this.gl;
-		var texture = images.get(name);
+		var texture = this.images.get(name);
 		
 		if (texture) {
 			return texture;
@@ -163,7 +166,7 @@ var Render = Class.create({
 
 
 		var texture = gl.createTexture();
-		images.set(name, texture);
+		this.images.set(name, texture);
 		texture.image = new Image();
 		texture.image.onload = function() {
 			gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -181,35 +184,13 @@ var Render = Class.create({
 	},
 	createTexture: function(r, g, b, a) {
 		var data = new Uint8Array([r, g, b, a]);
-		var texture = gl.createTexture();
-		this.gl.bindTexture(gl.TEXTURE_2D, texture);
-		this.gl.texImage2D(gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, gl.RGBA, this.gl.UNSIGNED_BYTE, data);
-		this.gl.texParameteri(gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-		this.gl.texParameteri(gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+		var texture = this.gl.createTexture();
+		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
 		texture.width = 1;
 		texture.height = 1;
 		return texture;
-	},
-	loadProjection: function (zoom) {
-		var r = canvas.width/2.0;
-		var l = -r;
-		var t = canvas.height/2.0;
-		var b = -t;
-		var n = 0.0;
-		var f = 1.0;
-		
-		var projectionMatrix = [
-			2.0/(r-l)*zoom,    0,            0,            0,
-			0,            2.0/(t-b)*zoom,    0,            0,
-			0,            0,            -2.0/(f-n),   0,
-			-(r+l)/(r-l), -(t+b)/(t-b), -(f+n)/(f-n), 1
-		];
-
-		this.gl.uniformMatrix4fv(program.projectionMatrix, false, projectionMatrix);
-	},
-	getInstance: function() {
-		if (!Renderer)
-			Renderer = new Render($('canvas'));
-		return Renderer
 	}
 });

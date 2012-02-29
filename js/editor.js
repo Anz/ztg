@@ -17,6 +17,9 @@ var map;
 var id;
 
 function editor_init() {
+	if (!Render)
+		Render = new Renderer($('canvas'));
+
 	map = new Map();
 	map.load('data/map.json');
 	
@@ -39,6 +42,7 @@ function editor_resume() {
 	document.onkeydown = function (e) { keys.set(e.keyCode.toString(), true); };
 	document.onkeyup = function (e) { keys.unset(e.keyCode.toString()); };
 	
+	Render.backgroundColor = {"r":0.3,"g":0.3,"b":0.3,"a":1};
 	mode = Modes.EDIT;
 	
 	id = setInterval(model_editor_main, 1000/60);
@@ -175,13 +179,12 @@ function model_editor_main() {
 	}
 	
 	// clear screen
-	graphic_clear({"r":0.3,"g":0.3,"b":0.3,"a":1});
-	graphic_load_projection(camera.zoom);
+	Render.clear();
 	
 	// draw grid
 	grid.each(function(entity) {
 		var position = entity.body.GetPosition();
-		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, 0, 0, entity.width, entity.height);
+		Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, 0, 0, entity.width, entity.height);
 	});
 	
 	// draw entities
@@ -192,7 +195,7 @@ function model_editor_main() {
 		if (!entity.width) entity.width = entity.model.texture.width;
 		if (!entity.height) entity.height = entity.model.texture.height;
 		if (!entity.width || !entity.height) return;
-		graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
+		Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
 	});
 	
 	// draw selection
@@ -201,18 +204,15 @@ function model_editor_main() {
 			return;
 		var position = entity.body.GetPosition();
 		var angle = entity.body.GetAngle();
-		graphic_render_mesh(frameMesh, {"r":1,"g":1,"b":0,"a":1}, null, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.width);
+		Render.draw(frameMesh, camera.zoom, {"r":1,"g":1,"b":0,"a":1}, null, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.width);
 	});
 	
 	if (mode == Modes.ADD) {
 		models.entities.each(function(entity) {
 			var position = entity.body.GetPosition();
-			graphic_load_projection(1);
-			graphic_render_mesh(entity.model.mesh, entity.color, entity.model.texture, meterInPixel(position.x), meterInPixel(position.y), entity.layer, 0, entity.width, entity.height);
+			Render.draw(entity.model.mesh, 1, entity.color, entity.model.texture, meterInPixel(position.x), meterInPixel(position.y), entity.layer, 0, entity.width, entity.height);
 		});
 	}
-	
-
 }
 
 function onMouseMove(event) {
@@ -387,10 +387,10 @@ function Grid() {
 			big_grid_indices[i] = i;
 	}
 	
-	var xaxis = new Model('_axis', 'white', new Mesh(PRIMITIVE.LINES, xaxis_vertices, null, xaxis_indices));
-	var yaxis = new Model('_yaxis', 'white', new Mesh(PRIMITIVE.LINES, yaxis_vertices, null, yaxis_indices));
-	var small = new Model('_smallgrid', 'white', new Mesh(PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices));
-	var big = new Model('_biggrid', 'white', new Mesh(PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices));
+	var xaxis = new Model('_axis', 'white', Render.createMesh(Render.PRIMITIVE.LINES, xaxis_vertices, null, xaxis_indices));
+	var yaxis = new Model('_yaxis', 'white', Render.createMesh(Render.PRIMITIVE.LINES, yaxis_vertices, null, yaxis_indices));
+	var small = new Model('_smallgrid', 'white', Render.createMesh(Render.PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices));
+	var big = new Model('_biggrid', 'white', Render.createMesh(Render.PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices));
 	
 	var grid = [
 		new Entity(map.world, small, 0, 0, -3),
@@ -410,6 +410,6 @@ function Grid() {
 function Frame() {
 	var vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
 	var indices = [0, 1, 1, 3, 3, 2, 2, 0];
-	var mesh = new Mesh(PRIMITIVE.LINES, vertices, null, indices);
+	var mesh = Render.createMesh(Render.PRIMITIVE.LINES, vertices, null, indices);
 	return mesh;
 }

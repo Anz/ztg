@@ -2,6 +2,7 @@ attribute vec2 vertexPosition;
 attribute vec2 textureCoord;
 
 uniform mat4 projectionMatrix;
+uniform vec3 uCamera;
 uniform vec3 uPosition;
 uniform float uRotation;
 uniform vec2 uSize;
@@ -11,6 +12,20 @@ varying vec2 vTextureCoord;
 varying vec4 vColor;
 
 void main() {
+		float right = uCamera.x/2.0;
+		float left = -right;
+		float top = uCamera.y/2.0;
+		float bottom = -top;
+		float near = 0.0;
+		float far = 1.0;
+		float zoom = uCamera.z;
+		
+		mat4 projectionMatrix = mat4(
+			2.0/(right-left)*zoom, 0, 0, 0,
+			0, 2.0/(top-bottom)*zoom, 0, 0,
+			0, 0, -2.0/(far-near), 0,
+			-(right+left)/(right-left), -(top+bottom)/(top-bottom), -(far+near)/(far-near), 1);
+
 		mat4 positionMatrix = mat4( 
 			uSize.x, 0.0, 0.0, 0.0,
 			0.0, uSize.y, 0.0, 0.0,
