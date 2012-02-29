@@ -1,3 +1,11 @@
+// singleton instance
+var Render;
+
+// instance singleton
+document.observe("dom:loaded", function() {
+  Render = new Renderer($('canvas'));
+});
+
 var Renderer = Class.create({
 	initialize: function(canvas) {
 		this.canvas = canvas;

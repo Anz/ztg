@@ -17,9 +17,6 @@ var map;
 var id;
 
 function editor_init() {
-	if (!Render)
-		Render = new Renderer($('canvas'));
-
 	map = new Map();
 	map.load('data/map.json');
 	

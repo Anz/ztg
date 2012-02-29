@@ -1,12 +1,8 @@
 var keys = new Hash();
 
-var Render;
-
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
-		if (!Render)
-			Render = new Renderer($('canvas'));
 	},
 	start: function() {
 		document.onkeydown = function (event) {
