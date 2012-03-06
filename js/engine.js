@@ -99,8 +99,6 @@ var Map = Class.create({
 				alert('Can not load map: ' + url); 
 			}
 		});
-		  
-		return map;
 	},
 	clone: function() {
 		var map = new Map();

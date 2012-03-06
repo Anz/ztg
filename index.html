@@ -8,9 +8,14 @@
 		<script language="JavaScript" src="js/engine.js"></script>
 		<script language="JavaScript" src="js/editor.js"></script>
     </head>
-    <body onload="editor_init()" style="margin:0;padding:0;height:100%;">
+    <body onload="editor_start()"; style="margin:0;padding:0;height:100%;">
 		<div id="banner">ZTG</div>
 		<div id="content">
+			<div id="menu">
+				<div class="menuItem" onclick='function move() {mode = Modes.MOVE}'>MOVE</div>
+				<div class="menuItem" onclick='function origin() {camera.x=0;}'>MOVE</div>
+			</div>
+			<div style=''></div>
 			<div id="border">
 				<canvas id="canvas" width="854px" height="480px"></canvas>
 			</div>
