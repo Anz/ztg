@@ -1,7 +1,6 @@
 var camera = {'x': 0, 'y': 0,'zoom': 1};
 var canvas;
 var textureWhite;
-var frameMesh;
 
 var ZOOM_MAX = 0.2;
 
@@ -10,7 +9,6 @@ var keys = new Hash();
 
 var Modes = {EDIT:0,MOVE:1,ADD:2};
 var mode = Modes.EDIT;
-var grid;
 var models;
 var map;
 
@@ -21,10 +19,6 @@ function editor_init() {
 	map.load('data/map.json');
 	
 	canvas = $('canvas');
-	
-	grid = Grid();
-	
-	frameMesh = Frame();
 	
 	editor_resume();
 }
@@ -109,12 +103,6 @@ function model_editor_main() {
 		camera.zoom = 1;
 	}
 	
-	// set grid
-	grid[0].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
-	grid[1].body.SetPosition(new b2Vec2(pixelInMeter(camera.x-(camera.x % 100)), pixelInMeter(camera.y-(camera.y % 100))));
-	grid[2].body.SetPosition(new b2Vec2(pixelInMeter(camera.x), 0));
-	grid[3].body.SetPosition(new b2Vec2(0, pixelInMeter(camera.y)));
-	
 	// change into adding mode
 	if (keys.get('32')) {
 		mode = Modes.ADD;
@@ -178,11 +166,20 @@ function model_editor_main() {
 	// clear screen
 	Render.clear();
 	
-	// draw grid
-	grid.each(function(entity) {
-		var position = entity.body.GetPosition();
-		Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, 0, 0, entity.width, entity.height);
-	});
+	for (var x = ((canvas.width/2+camera.x) % 10* camera.zoom)-canvas.width/2; x <= canvas.width/2; x += 10 * camera.zoom) {
+		Render.drawLine(x, -canvas.height/2, x, canvas.height/2, {"r":0.5,"g":0.5,"b":0.5,"a":1});
+	}
+	for (var y = ((canvas.height/2+camera.y) % (10* camera.zoom))-canvas.height/2; y <= canvas.height/2; y += 10 * camera.zoom) {
+		Render.drawLine(-canvas.width/2, y, canvas.width/2, y, {"r":0.5,"g":0.5,"b":0.5,"a":1});
+	}
+	for (var x = ((canvas.width/2+camera.x) % (100* camera.zoom))-canvas.width/2; x <= canvas.width/2; x += 100 * camera.zoom) {
+		Render.drawLine(x, -canvas.height/2, x, canvas.height/2, {"r":0.6,"g":0.6,"b":0.6,"a":1});
+	}
+	for (var y = ((canvas.height/2+camera.y) % (100* camera.zoom))-canvas.height/2; y <= canvas.height/2; y += 100 * camera.zoom) {
+		Render.drawLine(-canvas.width/2, y, canvas.width/2, y, {"r":0.6,"g":0.6,"b":0.6,"a":1});
+	}
+	Render.drawLine(-camera.x*camera.zoom, -canvas.height/2, -camera.x*camera.zoom, canvas.height/2, {"r":1,"g":1,"b":0,"a":1});
+	Render.drawLine(-canvas.width/2, -camera.y*camera.zoom, canvas.width/2, -camera.y*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 	
 	// draw entities
 	map.entities.sort(function (a, b) {	return a.layer - b.layer; });
@@ -192,7 +189,7 @@ function model_editor_main() {
 		if (!entity.width) entity.width = entity.model.texture.width;
 		if (!entity.height) entity.height = entity.model.texture.height;
 		if (!entity.width || !entity.height) return;
-		Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
+		Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
 	});
 	
 	// draw selection
@@ -201,7 +198,7 @@ function model_editor_main() {
 			return;
 		var position = entity.body.GetPosition();
 		var angle = entity.body.GetAngle();
-		Render.draw(frameMesh, camera.zoom, {"r":1,"g":1,"b":0,"a":1}, null, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.width);
+		Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 	});
 	
 	if (mode == Modes.ADD) {
@@ -334,79 +331,4 @@ function getSpacePosition(point) {
 		"x": point.x / camera.zoom + camera.x,
 		"y": point.y / camera.zoom + camera.y 
 	};
-}
-
-function Grid() {
-	var width = canvas.width/2 / ZOOM_MAX;
-	var height = canvas.height/2 / ZOOM_MAX;
-	
-	var xaxis_vertices = [-width,  0, width,  0];
-	var xaxis_indices = [0, 1];
-	
-	var yaxis_vertices = [0,  -height, 0,  height];
-	var yaxis_indices = [0, 1];
-	
-	// grid
-	var xlimit = width + 100 - (width % 100) + 100;
-	var ylimit = height + 100 - (height % 100) + 100;
-	
-	var small_grid_vertices = [];
-	var big_grid_vertices = [];
-	
-	for (var i=-xlimit; i<=xlimit; i+=10) {
-		var grid_vertices;
-		if(Math.abs(i)  % 100 == 0) grid_vertices = big_grid_vertices;
-		else grid_vertices = small_grid_vertices;
-		
- 		grid_vertices.push(i);
-		grid_vertices.push(-ylimit);		
-		grid_vertices.push(i);
-		grid_vertices.push(ylimit);
-	}
-	
-	for (var i=-ylimit; i<=ylimit; i+=10) {
-		var grid_vertices;
-		if (Math.abs(i) % 100 == 0) grid_vertices = big_grid_vertices;
-		else grid_vertices = small_grid_vertices;
-	
-		grid_vertices.push(-xlimit);
-		grid_vertices.push(i);		
-		grid_vertices.push(xlimit);
-		grid_vertices.push(i);
-	}
-	
-	var small_grid_indices = new Array(small_grid_vertices.length/2);
-	var big_grid_indices = new Array(big_grid_vertices.length/2);
-	
-	for (var i=0; i<small_grid_vertices.length/2; i++) {
-		small_grid_indices[i] = i;
-		if (i < big_grid_vertices.length/2)
-			big_grid_indices[i] = i;
-	}
-	
-	var xaxis = new Model('_axis', 'white', Render.createMesh(Render.PRIMITIVE.LINES, xaxis_vertices, null, xaxis_indices));
-	var yaxis = new Model('_yaxis', 'white', Render.createMesh(Render.PRIMITIVE.LINES, yaxis_vertices, null, yaxis_indices));
-	var small = new Model('_smallgrid', 'white', Render.createMesh(Render.PRIMITIVE.LINES, small_grid_vertices, null, small_grid_indices));
-	var big = new Model('_biggrid', 'white', Render.createMesh(Render.PRIMITIVE.LINES, big_grid_vertices, null, big_grid_indices));
-	
-	var grid = [
-		new Entity(map.world, small, 0, 0, -3),
-		new Entity(map.world, big, 0, 0, -2),
-		new Entity(map.world, xaxis, 0, 0, -1),
-		new Entity(map.world, yaxis, 0, 0, -1)
-	];
-	
-	grid[0].color = {"r":0.5,"g":0.5,"b":0.5,"a":1};
-	grid[1].color = {"r":0.6,"g":0.6,"b":0.6,"a":1};
-	grid[2].color = {"r":1,"g":1,"b":0,"a":1};
-	grid[3].color = {"r":1,"g":1,"b":0,"a":1};
-	
-	return grid;
-}
-
-function Frame() {
-	var vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
-	var indices = [0, 1, 1, 3, 3, 2, 2, 0];
-	var mesh = Render.createMesh(Render.PRIMITIVE.LINES, vertices, null, indices);
-	return mesh;
 }

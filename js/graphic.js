@@ -18,21 +18,38 @@ var Renderer = Class.create({
 			return;
 		}
 	
+		// setup shaders
 		this.program = this.loadShader('shader/vertex.vs', 'shader/fragment.fs');
+		
+		// setup textures
 		this.images.set('white', this.createTexture(255,255,255,255));
+		
+		// setup meshes
+		this.lineMesh = this.createMesh(this.PRIMITIVE.LINES, [-0.5, -0.5, 0.5, 0.5], null, [0, 1]);
+		this.frameMesh = this.createMesh(this.PRIMITIVE.LINES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], null, [0, 1, 1, 3, 3, 2, 2, 0]);
+		this.rectMesh = this.createMesh(this.PRIMITIVE.TRIANGLES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0], [0, 1, 2, 2, 1, 3]);
 	},
-	clear: function clear(color) {
+	clear: function (color) {
 		this.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 	},
-	draw: function draw(mesh, zoom, color, texture, x, y, layer, angle, width, height) {
+	drawLine: function (sx, sy, tx, ty, color) {
+		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy));
+	},
+	drawFrame: function (x, y, angle, width, height, color) {
+		this.draw(this.frameMesh, color, null, x, y, angle, width, height);
+	},
+	drawRect: function (x, y, angle, width, height, color, texture) {
+		this.draw(this.rectMesh, color, texture, x, y, angle, width, height);
+	},
+	draw: function (mesh, color, texture, x, y, angle, width, height) {
 		// settings
 		this.gl.enable(this.gl.BLEND);
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 		
 		// set uniforms
-		this.gl.uniform3f(this.program.camera, this.canvas.width, this.canvas.height, zoom);
-		this.gl.uniform3f(this.program.position, x, y, layer);
+		this.gl.uniform2f(this.program.camera, this.canvas.width, this.canvas.height);
+		this.gl.uniform2f(this.program.position, x, y);
 		this.gl.uniform1f(this.program.rotation, angle);
 		this.gl.uniform2f(this.program.size, width, height);
 		

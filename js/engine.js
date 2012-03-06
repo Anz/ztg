@@ -55,7 +55,8 @@ var Game = Class.create({
 			if (!entity.width) entity.width = entity.model.texture.width;
 			if (!entity.height) entity.height = entity.model.texture.height;
 			if (!entity.width || !entity.height) return;
-			Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
+			//Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
+			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
 		});
 	}
 });
@@ -71,12 +72,6 @@ var Map = Class.create({
 		var entities = this.entities;
 		var world = this.world;
 		
-		// create mesh
-		var sprite_vertices = [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5];
-		var sprite_textureCoords = [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0];
-		var sprite_indices = [0, 1, 2, 2, 1, 3];
-		var sprite = Render.createMesh(Render.PRIMITIVE.TRIANGLES, sprite_vertices, sprite_textureCoords, sprite_indices);
-		
 		new Ajax.Request(url, {
 			method:'get',
 			asynchronous: false,
@@ -86,7 +81,6 @@ var Map = Class.create({
 				
 				// load models
 				file.models.each(function(model) {
-					model.mesh = sprite;
 					model.texture = Render.loadTexture(model.image);
 					models.set(model.name, model);
 				});
