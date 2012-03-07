@@ -23,8 +23,24 @@ a {
 	color: black;
 }
 
+#models {
+	float: left;
+	width: 30%;
+	height: 100%;
+}
+
+.model {
+	float: left;
+	margin: 10px;
+}
+
+.model img {
+	width: 80px;
+	height: 80px;
+}
+
 #content {
-	margin: 0px auto;
+	float: left;
 	padding: 0;
 	width: 856px;
 	background: #2A2A2A;
@@ -39,7 +55,7 @@ a {
 	border: solid 1px yellow;
 }
 
-#menu {
+.floatClear {
 	clear:both;
 }
 

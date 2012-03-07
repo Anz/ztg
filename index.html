@@ -4,16 +4,22 @@
 		<link rel="stylesheet" type="text/css" href="stylesheet.css" />
 		<script language="JavaScript" src="js/prototype.js"/></script>
 		<script language="JavaScript" src="js/box2d.js"/></script>
+		<script language="JavaScript" src="js/input.js"></script>
 		<script language="JavaScript" src="js/graphic.js"></script>
 		<script language="JavaScript" src="js/engine.js"></script>
 		<script language="JavaScript" src="js/editor.js"></script>
     </head>
-    <body onload="editor_start()"; style="margin:0;padding:0;height:100%;">
+    <body style="margin:0;padding:0;height:100%;">
+		<div id="models">
+		</div>
 		<div id="banner">ZTG</div>
 		<div id="content">
 			<div id="menu">
-				<div class="menuItem" onclick='function move() {mode = Modes.MOVE}'>MOVE</div>
-				<div class="menuItem" onclick='function origin() {camera.x=0;}'>MOVE</div>
+				<div class="menuItem" onclick="Editor.mode = Editor.Modes.MOVE">MOVE</div>
+				<div class="menuItem" onclick="Editor.deleteSelection()">DELETE</div>
+				<div class="menuItem" onclick="Editor.camera = {'x':0,'y':0,'zoom':1}; Editor.mouse = {'x':0,'y':0}">ORIGIN</div>
+				<div class="menuItem" onclick="Editor.startGame()">GAME</div>
+				<div class="floatClear"/>
 			</div>
 			<div style=''></div>
 			<div id="border">

@@ -32,16 +32,21 @@ var InputClass = Class.create({
 			mouse.position.y = canvas.offsetTop - e.clientY;
 		};
 		canvas.onmousedown = function(e) {
-		};
-		
-		canvas.onmouseup = function(e) { 
 			switch (e.button) {
 				case 0: mouse.leftClick = true;
+				case 2: mouse.rightClick = true;
 			}
 		};
 		
+		/*canvas.onmouseup = function(e) { 
+			switch (e.button) {
+				case 0: mouse.leftClick = false;
+				case 2: mouse.rightClick = true;
+			}
+		};*/
+		
 		canvas.oncontextmenu = function(e) { 
-			mouse.rightClick = true; 
+			return false;
 		};
 		
 		window.onmousewheel = function(e) {
@@ -59,5 +64,15 @@ var InputClass = Class.create({
 		document.onkeyup = function(e) {
 			keyDown.unset(e.keyCode.toString());
 		};
+	},
+	readMouseWheel: function() {
+		var wheel = this.mouse.wheel;
+		this.mouse.wheel = 0;
+		return wheel;
+	},
+	readRightClick: function() {
+		var rightClick = this.mouse.rightClick;
+		this.mouse.rightClick = false;
+		return rightClick;
 	}
 });
