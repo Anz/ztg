@@ -12,7 +12,6 @@ var Renderer = Class.create({
 		this.gl = canvas.getContext("experimental-webgl");
 		this.images = new Hash();
 		this.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
-		this.PRIMITIVE = {TRIANGLES:0,LINES:1};
 		if (!this.gl) {
 			alert("Cannot initialize WebGL context");
 			return;
@@ -25,13 +24,17 @@ var Renderer = Class.create({
 		this.images.set('white', this.createTexture(255,255,255,255));
 		
 		// setup meshes
-		this.lineMesh = this.createMesh(this.PRIMITIVE.LINES, [-0.5, -0.5, 0.5, 0.5], null, [0, 1]);
-		this.frameMesh = this.createMesh(this.PRIMITIVE.LINES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], null, [0, 1, 1, 3, 3, 2, 2, 0]);
-		this.rectMesh = this.createMesh(this.PRIMITIVE.TRIANGLES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], [0.0, 1.0, 1.0, 1.0,	0.0, 0.0, 1.0, 0.0], [0, 1, 2, 2, 1, 3]);
+		this.lineMesh = this.createMesh(this.gl.LINES, [-0.5, -0.5, 0.5, 0.5], null, [0, 1]);
+		this.frameMesh = this.createMesh(this.gl.LINES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], null, [0, 1, 1, 3, 3, 2, 2, 0]);
+		this.rectMesh = this.createMesh(this.gl.TRIANGLES, [-0.5,  0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5], [0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0], [0, 1, 2, 2, 1, 3]);
+		this.pointMesh = this.createMesh(this.gl.POINTS, [0, 0], null, [0]);
 	},
 	clear: function (color) {
 		this.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
+	},
+	drawPoint: function (x, y, color) {
+		this.draw(this.pointMesh, color, null, x, y, 0, 0, 0);
 	},
 	drawLine: function (sx, sy, tx, ty, color) {
 		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy));
@@ -76,16 +79,11 @@ var Renderer = Class.create({
 		
 		// draw the buffer
 		this.gl.drawElements(mesh.type, mesh.num_indices, this.gl.UNSIGNED_SHORT, 0);
-	},
+	},	
 	createMesh: function(type, vertices, textureCoords, indices) {
 		// mesh
 		var mesh = {};
-	
-		switch (type) {
-			case this.PRIMITIVE.TRIANGLES: mesh.type = this.gl.TRIANGLES; break;
-			case this.PRIMITIVE.LINES: mesh.type = this.gl.LINES; break;
-			default: alert('Not supported mesh type: ' + type);
-		}
+		mesh.type = type;
 
 		// vertex
 		mesh.vertices = this.gl.createBuffer();

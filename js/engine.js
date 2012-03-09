@@ -1,28 +1,17 @@
-var keys = new Hash();
-
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
 	},
-	start: function() {
-		document.onkeydown = function (event) {
-			if(event.altKey && event.keyCode != 18) alert(event.keyCode);
-			keys.set(event.keyCode.toString(), true);
-		};
-		
-		document.onkeyup = function (event) {
-			keys.unset(event.keyCode.toString());
-		};
-		
+	start: function() {		
 		Render.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
 		
 		var game = this;
 		this.intervalId = setInterval(function(){ game.main(); }, 1000/60);
 	},
 	main: function () {
-		if (keys.get('27')) {
+		if (Input.keyDown.get('27')) {
 			clearInterval(this.intervalId);
-			editor_resume();
+			Editor.resume();
 			return;
 		}
 		
@@ -33,11 +22,11 @@ var Game = Class.create({
 		
 		this.map.entities.each(function(entity) {		
 			if (entity.model.name == 'hero') {
-				if (keys.get('65') && entity.body.GetLinearVelocity().x > -80) entity.body.ApplyImpulse(new b2Vec2(-10,0), entity.body.GetWorldCenter());
-				if (keys.get('68') && entity.body.GetLinearVelocity().x < 80) entity.body.ApplyImpulse(new b2Vec2(10,0), entity.body.GetWorldCenter());
-				if (keys.get('32')) {
+				if (Input.keyDown.get('65') && entity.body.GetLinearVelocity().x > -80) entity.body.ApplyImpulse(new b2Vec2(-10,0), entity.body.GetWorldCenter());
+				if (Input.keyDown.get('68') && entity.body.GetLinearVelocity().x < 80) entity.body.ApplyImpulse(new b2Vec2(10,0), entity.body.GetWorldCenter());
+				if (Input.keyDown.get('32')) {
 					entity.body.ApplyForce(new b2Vec2(0,18), entity.body.GetWorldCenter());
-					keys.unset('32');
+					Input.keyDown.unset('32');
 				}
 				var position = entity.body.GetPosition();
 				camera.x = meterInPixel(position.x);
@@ -55,7 +44,6 @@ var Game = Class.create({
 			if (!entity.width) entity.width = entity.model.texture.width;
 			if (!entity.height) entity.height = entity.model.texture.height;
 			if (!entity.width || !entity.height) return;
-			//Render.draw(entity.model.mesh, camera.zoom, entity.color, entity.model.texture, meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, entity.layer, angle, entity.width, entity.height);
 			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
 		});
 	}
@@ -92,7 +80,8 @@ var Map = Class.create({
 						alert('Model not defined: ' + entity.modelref);
 						return;
 					}
-					entities.push(new Entity(world, model, entity.x, entity.y, entity.layer));
+					if (!entity.angle) entity.angle = 0;
+					entities.push(new Entity(world, model, entity.x, entity.y, entity.angle, entity.layer));
 				});
 			},
 			onFailure: function() { 
@@ -107,14 +96,14 @@ var Map = Class.create({
 		
 		this.entities.each(function(entity) {
 			var position = entity.body.GetPosition();
-			map.entities.push(new Entity(map.world, entity.model, meterInPixel(position.x), meterInPixel(position.y), entity.layer));
+			map.entities.push(new Entity(map.world, entity.model, meterInPixel(position.x), meterInPixel(position.y), entity.body.GetAngle(), entity.layer));
 		});
 		return map;
 	}
 });
 
 var Entity = Class.create({
-	initialize: function(world, model, x, y, layer) {
+	initialize: function(world, model, x, y, angle, layer) {
 		this.model = model;
 		this.layer = layer;
 		this.width = model.texture.width;
@@ -128,6 +117,7 @@ var Entity = Class.create({
 		if (model.dynamic) 
 			bodyDef.type = b2Body.b2_dynamicBody;
 		bodyDef.position.Set(pixelInMeter(x), pixelInMeter(y));
+		bodyDef.angle = angle;
 		this.body = world.CreateBody(bodyDef);
 		var body = this.body;
 		model.shapes.each(function(shape) {

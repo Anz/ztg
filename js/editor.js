@@ -12,15 +12,16 @@ var EditorClass = Class.create({
 		this.map = new Map();	  
 		this.map.load('data/map.json');
 		
+		this.green = {"r":0,"g":1,"b":0,"a":0.3};
+		this.yellow = {"r":1,"g":1,"b":0,"a":1};
+		this.lightgrey = {"r":0.6,"g":0.6,"b":0.6,"a":1};
+		this.grey = {"r":0.5,"g":0.5,"b":0.5,"a":1};
+		this.darkgrey = {"r":0.3,"g":0.3,"b":0.3,"a":1};
+		this.white = {"r":1,"g":1,"b":1,"a":1};
+		
 		var map = this.map;
 		var parent = $('models');
-		this.map.models.keys().each(function(key,i) {
-			if (i > 0 && i % 4 == 0) {
-				var div = document.createElement("div");
-				div.setAttribute('class', 'floatClear');
-				parent.appendChild(div);
-			}
-		
+		this.map.models.keys().each(function(key) {
 			var model = map.models.get(key);
 			var image = document.createElement("img");
 			image.src = "img/" + model.image;
@@ -50,7 +51,7 @@ var EditorClass = Class.create({
 		};
 		this.canvas.onclick = onClick;
 		
-		Render.backgroundColor = {"r":0.3,"g":0.3,"b":0.3,"a":1};
+		Render.backgroundColor = this.darkgrey;
 		
 		this.id = setInterval(function() { obj.main(); }, 1000/60);
 	},
@@ -61,7 +62,7 @@ var EditorClass = Class.create({
 			
 		// drop selection
 		if (Input.readRightClick())
-			Editor.clearSelection(); 
+			//Editor.clearSelection(); 
 
 		// camera moving
 		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
@@ -108,19 +109,19 @@ var EditorClass = Class.create({
 		Render.clear();
 		
 		for (var x = ((this.canvas.width/2+this.camera.x) % 10* this.camera.zoom)-this.canvas.width/2; x <= this.canvas.width/2; x += 10 * this.camera.zoom) {
-			Render.drawLine(x, -this.canvas.height/2, x, this.canvas.height/2, {"r":0.5,"g":0.5,"b":0.5,"a":1});
+			Render.drawLine(x, -this.canvas.height/2, x, this.canvas.height/2, this.grey);
 		}
 		for (var y = ((this.canvas.height/2+this.camera.y) % (10* this.camera.zoom))-this.canvas.height/2; y <= this.canvas.height/2; y += 10 * this.camera.zoom) {
-			Render.drawLine(-this.canvas.width/2, y, this.canvas.width/2, y, {"r":0.5,"g":0.5,"b":0.5,"a":1});
+			Render.drawLine(-this.canvas.width/2, y, this.canvas.width/2, y, this.grey);
 		}
 		for (var x = ((this.canvas.width/2+this.camera.x) % (100* this.camera.zoom))-this.canvas.width/2; x <= this.canvas.width/2; x += 100 * this.camera.zoom) {
-			Render.drawLine(x, -this.canvas.height/2, x, this.canvas.height/2, {"r":0.6,"g":0.6,"b":0.6,"a":1});
+			Render.drawLine(x, -this.canvas.height/2, x, this.canvas.height/2, this.lightgrey);
 		}
 		for (var y = ((this.canvas.height/2+this.camera.y) % (100* this.camera.zoom))-this.canvas.height/2; y <= this.canvas.height/2; y += 100 * this.camera.zoom) {
-			Render.drawLine(-this.canvas.width/2, y, this.canvas.width/2, y, {"r":0.6,"g":0.6,"b":0.6,"a":1});
+			Render.drawLine(-this.canvas.width/2, y, this.canvas.width/2, y, this.lightgrey);
 		}
-		Render.drawLine(-this.camera.x*this.camera.zoom, -this.canvas.height/2, -this.camera.x*this.camera.zoom, this.canvas.height/2, {"r":1,"g":1,"b":0,"a":1});
-		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, {"r":1,"g":1,"b":0,"a":1});
+		Render.drawLine(-this.camera.x*this.camera.zoom, -this.canvas.height/2, -this.camera.x*this.camera.zoom, this.canvas.height/2, this.yellow);
+		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, this.yellow);
 		
 		// draw entities
 		this.map.entities.sort(function (a, b) {	return a.layer - b.layer; });
@@ -134,13 +135,28 @@ var EditorClass = Class.create({
 			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
 		});
 		
+		// physical bodies
+		for (var body = this.map.world.GetBodyList(); body; body = body.GetNext()) {
+			var position = body.GetPosition();
+			for (var fixture = body.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+				var shape = fixture.GetShape();
+				var vertices = shape.GetVertices();
+				for (var i=0; i<vertices.length; i++) {
+					var previousVertex = vertices[(i==0?vertices.length-1:i-1)];
+					var vertex = vertices[i];
+					Render.drawLine(meterInPixel(position.x+previousVertex.x)-this.camera.x, meterInPixel(position.y+previousVertex.y)-this.camera.y, meterInPixel(position.x+vertex.x)-this.camera.x, meterInPixel(position.y+vertex.y)-this.camera.y, this.green);
+					Render.drawPoint(meterInPixel(position.x+vertex.x)-this.camera.x, meterInPixel(position.y+vertex.y)-this.camera.y, this.green);
+				}
+			}
+		}
+		
 		// draw selection
 		this.map.entities.each(function(entity) {
 			if (!entity.selection) 
 				return;
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
-			Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
+			Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, this.yellow);
 		});
 	},
 	deleteSelection: function() {
@@ -159,7 +175,7 @@ var EditorClass = Class.create({
 	},
 	addEntity: function(modelName) {
 		this.clearSelection(); 
-		var entity = new Entity(this.map.world, this.map.models.get(modelName), 0, 0, 1);
+		var entity = new Entity(this.map.world, this.map.models.get(modelName), 0, 0, 0, 1);
 		entity.selection = true;
 		Editor.map.entities.push(entity);
 		Editor.mode = Editor.Modes.MOVE;
@@ -167,10 +183,7 @@ var EditorClass = Class.create({
 	clearSelection: function () {
 		var map = this.map;
 		Editor.map.entities.each(function(entity) {
-			if (!entity.selection)
-				return;
-			entity.destroy();
-			map.entities = map.entities.without(entity);
+			delete entity.selection;
 		});
 		Editor.mode = Editor.Modes.EDIT;
 	},
@@ -185,7 +198,7 @@ var EditorClass = Class.create({
 			"x": point.x / this.camera.zoom + this.camera.x,
 			"y": point.y / this.camera.zoom + this.camera.y 
 		};
-	}
+	},
 });
 
 function onClick(event) {
@@ -205,7 +218,7 @@ function onClick(event) {
 				}
 			});
 			
-			if (!Editor.keys.get('17'))
+			if (!Input.keyDown.get('17'))
 				Editor.clearSelection();
 			
 			if (target) {
@@ -218,11 +231,9 @@ function onClick(event) {
 		}
 	
 		case Editor.Modes.MOVE: {
-			Editor.map.world.ClearForces();
+			//Editor.map.world.ClearForces();
 			Editor.map.entities.each(function(entity) {
 				delete entity.selection;
-				delete entity.oldx;
-				delete entity.oldy;
 				entity.body.SetAwake(true);
 			});
 			Editor.mode = Editor.Modes.EDIT;

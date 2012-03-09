@@ -14,28 +14,28 @@
 			"fixedRotation": true,
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"10", "width":"40", "height":"64", "friction":0.01}
+				{"type":"box", "x":"0", "y":"0", "width":"40", "height":"64", "friction":0.01}
 			]
 		},
 		{
 			"name":"Level",
 			"image": "cave_lamp.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"40", "friction":0.1}
+				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
 			]
 		},
 		{
 			"name":"CaveEntrance", 
 			"image": "cave_entrance.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-50", "width":"260", "height":"40", "friction":0.1}
+				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
 			]
 		},
 		{
 			"name":"CaveEnd",
 			"image": "cave_end.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-1000", "width":"260", "height":"40", "friction":0.1}
+				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
 			]
 		},
 		{
@@ -43,7 +43,7 @@
 			"image": "box.png",
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "friction":1}
+				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":0.001, "friction":1}
 			]
 		}
 	]
