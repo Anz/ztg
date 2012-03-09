@@ -1,11 +1,14 @@
 {
 	"entities": [
 		{ "modelref": "CaveEntrance", "x": -256, "y": 0, "layer": 0},
-		{ "modelref": "hero", "x": 0, "y": 50, "layer": 0.5},
+		{ "modelref": "hero", "x": 0, "y": -40, "layer": 0.5},
 		{ "modelref": "Level", "x": 0, "y": 0, "layer": 0},
 		{ "modelref": "Level", "x": 256, "y": 0, "layer": 0},
 		{ "modelref": "Level", "x": 512, "y": 0, "layer": 0},
-		{ "modelref": "CaveEnd", "x": 768, "y": 0, "layer": 0}
+		{ "modelref": "CaveEnd", "x": 768, "y": 0, "layer": 0},
+		{ "modelref": "Box", "x": 200, "y": -55, "layer": 0},
+		{ "modelref": "Box", "x": 232, "y": -55, "layer": 0},
+		{ "modelref": "Box", "x": 216, "y": -23, "layer": 0}
 	],
 	"models": [
 		{
@@ -14,36 +17,44 @@
 			"fixedRotation": true,
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"40", "height":"64", "friction":0.01}
+				{"type":"circle", "x":"-5", "y":"-22", "radius":"10", "friction":0.01},
+				{"type":"box", "x":"-5", "y":"0", "width":"20", "height":"48", "friction":0.01},
+				{"type":"circle", "x":"-5", "y":"22", "radius":"10", "friction":0.01}
 			]
 		},
 		{
 			"name":"Level",
 			"image": "cave_lamp.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
+				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.3},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3}
 			]
 		},
 		{
 			"name":"CaveEntrance", 
 			"image": "cave_entrance.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
+				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.3},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3},
+				{"type":"box", "x":"-128", "y":"0", "width":"50", "height":"256", "friction":0.3}
 			]
 		},
 		{
 			"name":"CaveEnd",
 			"image": "cave_end.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"-90", "width":"256", "height":"50", "friction":0.1}
+				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.1},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.1},
+				{"type":"box", "x":"128", "y":"0", "width":"50", "height":"256", "friction":0.1}
 			]
 		},
 		{
 			"name":"Box",
 			"image": "box.png",
+			"fixedRotation": true,
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":0.001, "friction":1}
+				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1000, "friction":0.1}
 			]
 		}
 	]

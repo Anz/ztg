@@ -21,7 +21,24 @@ var Renderer = Class.create({
 		this.program = this.loadShader('shader/vertex.vs', 'shader/fragment.fs');
 		
 		// setup textures
-		this.images.set('white', this.createTexture(255,255,255,255));
+		this.images.set('white', this.createTexture([255,255,255,255],1,1));
+		
+		var pixelHatchSize = 128;
+		var pixelHatch = new Array(pixelHatchSize*pixelHatchSize*4);
+		for (var i=0; i<pixelHatchSize*pixelHatchSize; i++) {
+			if (((i % pixelHatchSize)+2*(pixelHatchSize-(i / pixelHatchSize))) % (pixelHatchSize/2) < (pixelHatchSize/4)) {
+				pixelHatch[i*4+0] = 0;
+				pixelHatch[i*4+1] = 0;
+				pixelHatch[i*4+2] = 0;
+				pixelHatch[i*4+3] = 0;
+			} else {
+				pixelHatch[i*4+0] = 255;
+				pixelHatch[i*4+1] = 255;
+				pixelHatch[i*4+2] = 255;
+				pixelHatch[i*4+3] = 255;
+			}
+		}
+		this.images.set('hatched', this.createTexture(pixelHatch,pixelHatchSize,pixelHatchSize));
 		
 		// setup meshes
 		this.lineMesh = this.createMesh(this.gl.LINES, [-0.5, -0.5, 0.5, 0.5], null, [0, 1]);
@@ -205,15 +222,15 @@ var Renderer = Class.create({
 		
 		return texture;
 	},
-	createTexture: function(r, g, b, a) {
-		var data = new Uint8Array([r, g, b, a]);
+	createTexture: function(pixels,width,height) {
+		var data = new Uint8Array(pixels);
 		var texture = this.gl.createTexture();
 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, 1, 1, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEAREST);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
-		texture.width = 1;
-		texture.height = 1;
+		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+		texture.width = width;
+		texture.height = height;
 		return texture;
 	}
 });

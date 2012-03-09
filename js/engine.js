@@ -15,6 +15,7 @@ var Game = Class.create({
 			return;
 		}
 		
+		
 		// physics
 		this.map.world.Step(1000/60, 8, 3);
 
@@ -81,7 +82,7 @@ var Map = Class.create({
 						return;
 					}
 					if (!entity.angle) entity.angle = 0;
-					entities.push(new Entity(world, model, entity.x, entity.y, entity.angle, entity.layer));
+					entities.push(new Entity(world, model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle, entity.layer));
 				});
 			},
 			onFailure: function() { 
@@ -96,7 +97,7 @@ var Map = Class.create({
 		
 		this.entities.each(function(entity) {
 			var position = entity.body.GetPosition();
-			map.entities.push(new Entity(map.world, entity.model, meterInPixel(position.x), meterInPixel(position.y), entity.body.GetAngle(), entity.layer));
+			map.entities.push(new Entity(map.world, entity.model, position.x, position.y, entity.body.GetAngle(), entity.layer));
 		});
 		return map;
 	}
@@ -116,15 +117,19 @@ var Entity = Class.create({
 			bodyDef.fixedRotation = true;
 		if (model.dynamic) 
 			bodyDef.type = b2Body.b2_dynamicBody;
-		bodyDef.position.Set(pixelInMeter(x), pixelInMeter(y));
+		bodyDef.position.Set(x, y);
 		bodyDef.angle = angle;
 		this.body = world.CreateBody(bodyDef);
 		var body = this.body;
 		model.shapes.each(function(shape) {
-			var shapeDef = new b2PolygonShape();
-
-			shapeDef.SetAsOrientedBox(pixelInMeter(shape.width)/2, pixelInMeter(shape.height)/2, new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)), 0);
-			
+			var shapeDef;
+			if (shape.type == 'box') {
+				shapeDef = new b2PolygonShape();
+				shapeDef.SetAsOrientedBox(pixelInMeter(shape.width)/2, pixelInMeter(shape.height)/2, new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)), 0);			
+			} else if (shape.type == 'circle') {
+				shapeDef = new b2CircleShape(pixelInMeter(shape.radius));
+				shapeDef.SetLocalPosition(new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)));
+			}
 			var fixtureDef = new b2FixtureDef();
 			fixtureDef.shape = shapeDef;
 			fixtureDef.restitution = typeof shape.restitution != 'undefined' ? shape.restitution : 0;
@@ -132,6 +137,53 @@ var Entity = Class.create({
 			fixtureDef.friction = typeof shape.friction != 'undefined' ? shape.friction : 0.3;
 			body.CreateFixture(fixtureDef);
 		});
+		
+		var bodyMeshVertices = [];
+		var bodyMeshIndices = [];
+		
+		// physical mesh
+		for (var fixture = this.body.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
+			var shape = fixture.GetShape();
+			var indexStart = bodyMeshVertices.length/2;
+			if (shape.GetType() == 1) {
+				var vertices = shape.GetVertices();
+				for (var i=0; i<vertices.length; i++) {
+					var vertex = vertices[i];
+					bodyMeshVertices.push(meterInPixel(vertex.x));
+					bodyMeshVertices.push(meterInPixel(vertex.y));
+					
+					if (i > 0 && i % 3 == 0) {
+						bodyMeshIndices.push(indexStart);
+						bodyMeshIndices.push(indexStart+i-1);
+					}
+					bodyMeshIndices.push(indexStart+i);
+				}
+			} else {
+				var position = shape.GetLocalPosition();
+				var radius = meterInPixel(shape.GetRadius());
+				bodyMeshVertices.push(meterInPixel(position.x));
+				bodyMeshVertices.push(meterInPixel(position.y));
+				bodyMeshIndices.push(indexStart);
+				
+				bodyMeshVertices.push(meterInPixel(position.x));
+				bodyMeshVertices.push(radius+meterInPixel(position.y));
+				bodyMeshIndices.push(indexStart+1);
+				
+				var numberOfVertices = 32;
+				for(var i=0; i <= numberOfVertices; i++) {
+					bodyMeshVertices.push(Math.sin(i/numberOfVertices*2*Math.PI)*radius+meterInPixel(position.x));
+					bodyMeshVertices.push(Math.cos(i/numberOfVertices*2*Math.PI)*radius+meterInPixel(position.y));
+				
+					bodyMeshIndices.push(indexStart+i+2);
+					if (i < numberOfVertices) {
+						bodyMeshIndices.push(indexStart);
+						bodyMeshIndices.push(indexStart+i+2);
+					}
+				}
+			}
+		}
+		this.body.mesh = Render.createMesh(Render.gl.TRIANGLES, bodyMeshVertices, null, bodyMeshIndices);
+
 	},
 	destroy: function() {
 		this.body.GetWorld().DestroyBody(this.body);

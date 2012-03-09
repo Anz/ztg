@@ -11,7 +11,9 @@ var EditorClass = Class.create({
 	initialize: function() {
 		this.map = new Map();	  
 		this.map.load('data/map.json');
+	
 		
+		this.red = {"r":1,"g":0,"b":0,"a":0.3};
 		this.green = {"r":0,"g":1,"b":0,"a":0.3};
 		this.yellow = {"r":1,"g":1,"b":0,"a":1};
 		this.lightgrey = {"r":0.6,"g":0.6,"b":0.6,"a":1};
@@ -40,7 +42,9 @@ var EditorClass = Class.create({
 		this.keys = new Hash();
 
 		this.Modes = {EDIT:0,MOVE:1};
-		this.mode = this.Modes.EDIT;		
+		this.mode = this.Modes.EDIT;
+		
+		this.showPhysicalBody = false;
 	},
 	resume: function() {
 		// register event handlers
@@ -53,12 +57,12 @@ var EditorClass = Class.create({
 		
 		Render.backgroundColor = this.darkgrey;
 		
-		this.id = setInterval(function() { obj.main(); }, 1000/60);
+		this.id = setInterval(function() { obj.main(); }, 1000/30);
 	},
 	main: function() {		
 		// calculate physics
-		if (this.mode != this.Modes.MOVE)
-			this.map.world.Step(1000/60, 8, 3);
+		//if (this.mode != this.Modes.MOVE)
+		this.map.world.Step(1000/30, 6, 3);
 			
 		// drop selection
 		if (Input.readRightClick())
@@ -66,12 +70,13 @@ var EditorClass = Class.create({
 
 		// camera moving
 		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
+		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
 		if (Input.keyDown.get('65')) this.camera.x -= 20 / this.camera.zoom;
 		if (Input.keyDown.get('83')) this.camera.y -= 20 / this.camera.zoom;
 		if (Input.keyDown.get('68')) this.camera.x += 20 / this.camera.zoom;
 		
 		// camera zoom
-		this.camera.zoom = Math.min(4, Math.max(0.25, this.camera.zoom-Input.readMouseWheel()));
+		this.camera.zoom = Math.min(10, Math.max(0.05, this.camera.zoom-Input.readMouseWheel()*this.camera.zoom));
 		
 		// moving selection along the cursor
 		if (this.mode == this.Modes.MOVE) {
@@ -108,7 +113,7 @@ var EditorClass = Class.create({
 		// clear screen
 		Render.clear();
 		
-		for (var x = ((this.canvas.width/2+this.camera.x) % 10* this.camera.zoom)-this.canvas.width/2; x <= this.canvas.width/2; x += 10 * this.camera.zoom) {
+		/*for (var x = ((this.canvas.width/2+this.camera.x) % 10* this.camera.zoom)-this.canvas.width/2; x <= this.canvas.width/2; x += 10 * this.camera.zoom) {
 			Render.drawLine(x, -this.canvas.height/2, x, this.canvas.height/2, this.grey);
 		}
 		for (var y = ((this.canvas.height/2+this.camera.y) % (10* this.camera.zoom))-this.canvas.height/2; y <= this.canvas.height/2; y += 10 * this.camera.zoom) {
@@ -119,7 +124,7 @@ var EditorClass = Class.create({
 		}
 		for (var y = ((this.canvas.height/2+this.camera.y) % (100* this.camera.zoom))-this.canvas.height/2; y <= this.canvas.height/2; y += 100 * this.camera.zoom) {
 			Render.drawLine(-this.canvas.width/2, y, this.canvas.width/2, y, this.lightgrey);
-		}
+		}*/
 		Render.drawLine(-this.camera.x*this.camera.zoom, -this.canvas.height/2, -this.camera.x*this.camera.zoom, this.canvas.height/2, this.yellow);
 		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, this.yellow);
 		
@@ -133,22 +138,11 @@ var EditorClass = Class.create({
 			if (!entity.height) entity.height = entity.model.texture.height;
 			if (!entity.width || !entity.height) return;
 			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
-		});
-		
-		// physical bodies
-		for (var body = this.map.world.GetBodyList(); body; body = body.GetNext()) {
-			var position = body.GetPosition();
-			for (var fixture = body.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
-				var shape = fixture.GetShape();
-				var vertices = shape.GetVertices();
-				for (var i=0; i<vertices.length; i++) {
-					var previousVertex = vertices[(i==0?vertices.length-1:i-1)];
-					var vertex = vertices[i];
-					Render.drawLine(meterInPixel(position.x+previousVertex.x)-this.camera.x, meterInPixel(position.y+previousVertex.y)-this.camera.y, meterInPixel(position.x+vertex.x)-this.camera.x, meterInPixel(position.y+vertex.y)-this.camera.y, this.green);
-					Render.drawPoint(meterInPixel(position.x+vertex.x)-this.camera.x, meterInPixel(position.y+vertex.y)-this.camera.y, this.green);
-				}
+			if (Editor.showPhysicalBody == true) {
+				
+				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom);
 			}
-		}
+		});
 		
 		// draw selection
 		this.map.entities.each(function(entity) {
@@ -156,7 +150,7 @@ var EditorClass = Class.create({
 				return;
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
-			Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, this.yellow);
+			Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 		});
 	},
 	deleteSelection: function() {
@@ -176,6 +170,7 @@ var EditorClass = Class.create({
 	addEntity: function(modelName) {
 		this.clearSelection(); 
 		var entity = new Entity(this.map.world, this.map.models.get(modelName), 0, 0, 0, 1);
+		entity.body.SetType(b2Body.b2_staticBody);
 		entity.selection = true;
 		Editor.map.entities.push(entity);
 		Editor.mode = Editor.Modes.MOVE;
@@ -222,10 +217,7 @@ function onClick(event) {
 				Editor.clearSelection();
 			
 			if (target) {
-				var position = target.body.GetPosition();
 				target.selection = true;
-				target.oldx = position.x;
-				target.oldy = position.y;
 			}
 			break;
 		}
@@ -233,8 +225,19 @@ function onClick(event) {
 		case Editor.Modes.MOVE: {
 			//Editor.map.world.ClearForces();
 			Editor.map.entities.each(function(entity) {
-				delete entity.selection;
-				entity.body.SetAwake(true);
+				if (entity.selection) {
+					delete entity.selection;
+					/*entity.body.SetLinearVelocity(new b2Vec2(0,0));
+					entity.body.SetAngularVelocity(0);
+					entity.body.SetType(b2Body.b2_dynamicBody);*/
+					
+					//entity.body.SetAwake(true);
+					var position = entity.body.GetPosition();
+					var entity2 = new Entity(Editor.map.world, entity.model, position.x, position.y, 0);
+					entity.destroy();
+					Editor.map.entities = Editor.map.entities.without(entity);
+					Editor.map.entities.push(entity2);
+				}
 			});
 			Editor.mode = Editor.Modes.EDIT;
 			break;
