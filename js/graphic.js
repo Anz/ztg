@@ -70,7 +70,7 @@ var Renderer = Class.create({
 		// set uniforms
 		this.gl.uniform2f(this.program.camera, this.canvas.width, this.canvas.height);
 		this.gl.uniform2f(this.program.position, x, y);
-		this.gl.uniform1f(this.program.rotation, angle);
+		this.gl.uniform1f(this.program.rotation, -angle);
 		this.gl.uniform2f(this.program.size, width, height);
 		
 		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
@@ -227,8 +227,8 @@ var Renderer = Class.create({
 		var texture = this.gl.createTexture();
 		this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 		this.gl.texImage2D(this.gl.TEXTURE_2D, 0, this.gl.RGBA, width, height, 0, this.gl.RGBA, this.gl.UNSIGNED_BYTE, data);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.LINEAR);
-		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.LINEAR);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MAG_FILTER, this.gl.NEARST);
+		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEARST);
 		texture.width = width;
 		texture.height = height;
 		return texture;

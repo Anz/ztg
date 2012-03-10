@@ -17,21 +17,21 @@ var Game = Class.create({
 		
 		
 		// physics
-		this.map.world.Step(1000/60, 8, 3);
+		this.map.world.Step(1.0/30.0, 8, 3);
 
 		var camera = {'x': 0, 'y': 0, 'zoom': 2};
 		
 		this.map.entities.each(function(entity) {		
 			if (entity.model.name == 'hero') {
-				if (Input.keyDown.get('65') && entity.body.GetLinearVelocity().x > -80) entity.body.ApplyImpulse(new b2Vec2(-10,0), entity.body.GetWorldCenter());
-				if (Input.keyDown.get('68') && entity.body.GetLinearVelocity().x < 80) entity.body.ApplyImpulse(new b2Vec2(10,0), entity.body.GetWorldCenter());
-				if (Input.keyDown.get('32')) {
-					entity.body.ApplyForce(new b2Vec2(0,18), entity.body.GetWorldCenter());
+				if (Input.keyDown.get('65') && entity.body.GetLinearVelocity().x > -5) entity.body.ApplyImpulse(new b2Vec2(-5,0), entity.body.GetWorldCenter());
+				if (Input.keyDown.get('68') && entity.body.GetLinearVelocity().x < 5) entity.body.ApplyImpulse(new b2Vec2(5,0), entity.body.GetWorldCenter());
+				if (Input.keyDown.get('32') && entity.body.GetLinearVelocity().y < 5) {
+					entity.body.ApplyImpulse(new b2Vec2(0,20), entity.body.GetWorldCenter());
 					Input.keyDown.unset('32');
 				}
 				var position = entity.body.GetPosition();
 				camera.x = meterInPixel(position.x);
-				camera.y = meterInPixel(position.y);
+				camera.y = meterInPixel(position.y)+30;
 			}
 		});
 	
@@ -117,6 +117,10 @@ var Entity = Class.create({
 			bodyDef.fixedRotation = true;
 		if (model.dynamic) 
 			bodyDef.type = b2Body.b2_dynamicBody;
+		if (model.linearDamping)
+			bodyDef.linearDamping = model.linearDamping;
+		if (model.angularDamping)
+			bodyDef.angularDamping = model.angularDamping;
 		bodyDef.position.Set(x, y);
 		bodyDef.angle = angle;
 		this.body = world.CreateBody(bodyDef);

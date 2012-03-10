@@ -8,7 +8,9 @@
 		{ "modelref": "CaveEnd", "x": 768, "y": 0, "layer": 0},
 		{ "modelref": "Box", "x": 200, "y": -55, "layer": 0},
 		{ "modelref": "Box", "x": 232, "y": -55, "layer": 0},
-		{ "modelref": "Box", "x": 216, "y": -23, "layer": 0}
+		{ "modelref": "Box", "x": 216, "y": -23, "layer": 0},
+		{ "modelref": "Box", "x": -300, "y": -23, "layer": 0},
+		{ "modelref": "Box", "x": -300, "y": 0, "layer": 0}
 	],
 	"models": [
 		{
@@ -16,18 +18,19 @@
 			"image": "john.png",
 			"fixedRotation": true,
 			"dynamic": true,
+			"linearDamping": 3,
 			"shapes": [
-				{"type":"circle", "x":"-5", "y":"-22", "radius":"10", "friction":0.01},
-				{"type":"box", "x":"-5", "y":"0", "width":"20", "height":"48", "friction":0.01},
-				{"type":"circle", "x":"-5", "y":"22", "radius":"10", "friction":0.01}
+				{"type":"circle", "x":"-6", "y":"-26", "radius":"6", "density":4,"friction":1},
+				{"type":"box", "x":"-6", "y":"0", "width":"12", "height":"48", "density":4, "friction":1},
+				{"type":"circle", "x":"-6", "y":"26", "radius":"6", "density":4, "friction":1}
 			]
 		},
 		{
 			"name":"Level",
 			"image": "cave_lamp.png",
 			"shapes": [
-				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.3},
-				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3}
+				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":1},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":1}
 			]
 		},
 		{
@@ -51,10 +54,9 @@
 		{
 			"name":"Box",
 			"image": "box.png",
-			"fixedRotation": true,
 			"dynamic": true,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1000, "friction":0.1}
+				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":5, "friction":0.3}
 			]
 		}
 	]

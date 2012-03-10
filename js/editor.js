@@ -39,7 +39,8 @@ var EditorClass = Class.create({
 		this.camera = {'x': 0, 'y': 0,'zoom': 1};
 
 		this.mouse = {"x":0,"y":0};
-		this.keys = new Hash();
+		
+		this.selection = [];
 
 		this.Modes = {EDIT:0,MOVE:1};
 		this.mode = this.Modes.EDIT;
@@ -47,7 +48,6 @@ var EditorClass = Class.create({
 		this.showPhysicalBody = false;
 	},
 	resume: function() {
-		// register event handlers
 		var obj = this;
 		
 		this.canvas.onmousemove = function(event) {
@@ -57,19 +57,18 @@ var EditorClass = Class.create({
 		
 		Render.backgroundColor = this.darkgrey;
 		
-		this.id = setInterval(function() { obj.main(); }, 1000/30);
+		this.id = setInterval(function() { obj.main(); }, 1000/60);
 	},
 	main: function() {		
 		// calculate physics
-		//if (this.mode != this.Modes.MOVE)
-		this.map.world.Step(1000/30, 6, 3);
+		this.map.world.Step(1/30, 8, 3);
 			
 		// drop selection
-		if (Input.readRightClick())
-			//Editor.clearSelection(); 
+		/*if (Input.readRightClick()) {
+			this.selection.length = 0;
+		}*/
 
 		// camera moving
-		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
 		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
 		if (Input.keyDown.get('65')) this.camera.x -= 20 / this.camera.zoom;
 		if (Input.keyDown.get('83')) this.camera.y -= 20 / this.camera.zoom;
@@ -80,7 +79,7 @@ var EditorClass = Class.create({
 		
 		// moving selection along the cursor
 		if (this.mode == this.Modes.MOVE) {
-			var target = this.getSpacePosition(this.mouse);
+			/*var target = this.getSpacePosition(this.mouse);
 			
 			var center = {"x":0,"y":0};
 			var count = 0;
@@ -107,7 +106,7 @@ var EditorClass = Class.create({
 				});
 			} else {
 				this.mode = this.Modes.EDIT;
-			}
+			}*/
 		}
 		
 		// clear screen
@@ -145,22 +144,28 @@ var EditorClass = Class.create({
 		});
 		
 		// draw selection
-		this.map.entities.each(function(entity) {
+		/*this.map.entities.each(function(entity) {
 			if (!entity.selection) 
 				return;
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			Render.drawFrame((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle,  entity.width*camera.zoom, entity.width*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
+		});*/
+		var mouse = this.mouse;
+		this.selection.each(function(selected) {
+			Render.drawRect(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":1,"a":1}, selected.model.texture);
+			Render.drawFrame(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 		});
 	},
 	deleteSelection: function() {
-		var map = this.map;
+		/*var map = this.map;
 		this.map.entities.each(function(entity) {
 			if (!entity.selection)
 				return;
 			entity.destroy();
 			map.entities = map.entities.without(entity);
-		});
+		});*/
+		this.clearSelection();
 	},
 	startGame: function() {
 		clearInterval(this.id);			
@@ -168,18 +173,22 @@ var EditorClass = Class.create({
 		new Game(game).start();
 	},
 	addEntity: function(modelName) {
-		this.clearSelection(); 
-		var entity = new Entity(this.map.world, this.map.models.get(modelName), 0, 0, 0, 1);
+		//this.clearSelection();
+		var model = this.map.models.get(modelName);
+		this.selection.length = 0;
+		this.selection = [{"x":0,"y":0,"model":model}];
+		/*var entity = new Entity(this.map.world, this.map.models.get(modelName), 0, 0, 0, 1);
 		entity.body.SetType(b2Body.b2_staticBody);
 		entity.selection = true;
-		Editor.map.entities.push(entity);
+		Editor.map.entities.push(entity);*/
 		Editor.mode = Editor.Modes.MOVE;
 	},
 	clearSelection: function () {
-		var map = this.map;
+		/*var map = this.map;
 		Editor.map.entities.each(function(entity) {
 			delete entity.selection;
-		});
+		});*/
+		this.selection.length = 0;
 		Editor.mode = Editor.Modes.EDIT;
 	},
 	getViewPosition: function(e) {
@@ -200,7 +209,7 @@ function onClick(event) {
 	var mouse = Editor.getSpacePosition(Editor.getViewPosition(event));
 
 	switch (Editor.mode) {
-		case Editor.Modes.EDIT: {
+		/*case Editor.Modes.EDIT: {
 			var target;
 			Editor.map.entities.each(function(entity) {
 				if (entity.selection)
@@ -220,25 +229,17 @@ function onClick(event) {
 				target.selection = true;
 			}
 			break;
-		}
+		}*/
 	
 		case Editor.Modes.MOVE: {
-			//Editor.map.world.ClearForces();
-			Editor.map.entities.each(function(entity) {
-				if (entity.selection) {
-					delete entity.selection;
-					/*entity.body.SetLinearVelocity(new b2Vec2(0,0));
-					entity.body.SetAngularVelocity(0);
-					entity.body.SetType(b2Body.b2_dynamicBody);*/
-					
-					//entity.body.SetAwake(true);
-					var position = entity.body.GetPosition();
-					var entity2 = new Entity(Editor.map.world, entity.model, position.x, position.y, 0);
-					entity.destroy();
-					Editor.map.entities = Editor.map.entities.without(entity);
-					Editor.map.entities.push(entity2);
-				}
+			Editor.selection.each(function(selected) {
+				var position = {"x":mouse.x-selected.x,"y":mouse.y-selected.y};
+				position = Editor.getSpacePosition(position);
+				var entity = new Entity(Editor.map.world, selected.model, pixelInMeter(mouse.x), pixelInMeter(mouse.y), 0, 1);
+				Editor.map.entities.push(entity);
 			});
+			Editor.selection.length = 0;
+			
 			Editor.mode = Editor.Modes.EDIT;
 			break;
 		}
