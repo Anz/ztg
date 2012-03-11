@@ -33,17 +33,19 @@ var InputClass = Class.create({
 		};
 		canvas.onmousedown = function(e) {
 			switch (e.button) {
-				case 0: mouse.leftClick = true;
-				case 2: mouse.rightClick = true;
+				case 0: mouse.leftClick = true; break;
+				case 0: mouse.middleClick = true; break;
+				case 2: mouse.rightClick = true; break;
 			}
 		};
 		
-		/*canvas.onmouseup = function(e) { 
+		canvas.onmouseup = function(e) {
 			switch (e.button) {
-				case 0: mouse.leftClick = false;
-				case 2: mouse.rightClick = true;
+				case 0: mouse.leftClick = false; break;
+				case 0: mouse.middleClick = false; break;
+				case 2: mouse.rightClick = false; break;
 			}
-		};*/
+		};
 		
 		canvas.oncontextmenu = function(e) { 
 			return false;
@@ -58,6 +60,7 @@ var InputClass = Class.create({
 		}, false);
 		
 		document.onkeydown = function(e) {
+			if (e.altKey && e.keyCode != 18) alert(e.keyCode);
 			keyDown.set(e.keyCode.toString(), true);
 		};
 		

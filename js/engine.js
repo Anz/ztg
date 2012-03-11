@@ -18,18 +18,40 @@ var Game = Class.create({
 		
 		// physics
 		this.map.world.Step(1.0/30.0, 8, 3);
+		
+		// handle collision
+		for (var contact = this.map.world.GetContactList(); contact; contact = contact.GetNext()) {
+			var entity1 = contact.GetFixtureA().GetBody().GetUserData();
+			var entity2 = contact.GetFixtureB().GetBody().GetUserData();
+			
+			if (entity1.body.IsBullet()) {
+				this.map.entities = this.map.entities.without(entity1);
+				entity1.destroy();
+			}
+			if (entity2.body.IsBullet()) {
+				this.map.entities = this.map.entities.without(entity2);
+				entity2.destroy();
+			}
+		}
 
 		var camera = {'x': 0, 'y': 0, 'zoom': 2};
-		
-		this.map.entities.each(function(entity) {		
+		var map = this.map;
+		this.map.entities.each(function(entity) {
 			if (entity.model.name == 'hero') {
+				var position = entity.body.GetPosition();
 				if (Input.keyDown.get('65') && entity.body.GetLinearVelocity().x > -5) entity.body.ApplyImpulse(new b2Vec2(-5,0), entity.body.GetWorldCenter());
 				if (Input.keyDown.get('68') && entity.body.GetLinearVelocity().x < 5) entity.body.ApplyImpulse(new b2Vec2(5,0), entity.body.GetWorldCenter());
 				if (Input.keyDown.get('32') && entity.body.GetLinearVelocity().y < 5) {
 					entity.body.ApplyImpulse(new b2Vec2(0,20), entity.body.GetWorldCenter());
 					Input.keyDown.unset('32');
 				}
-				var position = entity.body.GetPosition();
+				var now = new Date().getTime();
+				if (Input.keyDown.get('13') && (!entity.lastShot || now - entity.lastShot > 200)) {
+					entity.lastShot = now;
+					var bullet = new Entity(map.world, map.models.get('bullet'), position.x+pixelInMeter(50), position.y+pixelInMeter(5), 0.1);
+					bullet.body.ApplyForce(new b2Vec2(20,0), bullet.body.GetWorldCenter());
+					map.entities.push(bullet);
+				}
 				camera.x = meterInPixel(position.x);
 				camera.y = meterInPixel(position.y)+30;
 			}
@@ -39,7 +61,7 @@ var Game = Class.create({
 		Render.clear();
 		
 		this.map.entities.sort(function (a, b) { return a.layer - b.layer; });
-		this.map.entities.each(function(entity) {
+		this.map.entities.each(function(entity) {		
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			if (!entity.width) entity.width = entity.model.texture.width;
@@ -82,7 +104,7 @@ var Map = Class.create({
 						return;
 					}
 					if (!entity.angle) entity.angle = 0;
-					entities.push(new Entity(world, model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle, entity.layer));
+					entities.push(new Entity(world, model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle));
 				});
 			},
 			onFailure: function() { 
@@ -97,26 +119,29 @@ var Map = Class.create({
 		
 		this.entities.each(function(entity) {
 			var position = entity.body.GetPosition();
-			map.entities.push(new Entity(map.world, entity.model, position.x, position.y, entity.body.GetAngle(), entity.layer));
+			map.entities.push(new Entity(map.world, entity.model, position.x, position.y, entity.body.GetAngle()));
 		});
 		return map;
 	}
 });
 
 var Entity = Class.create({
-	initialize: function(world, model, x, y, angle, layer) {
+	initialize: function(world, model, x, y, angle) {
 		this.model = model;
-		this.layer = layer;
+		this.layer = model.layer;
 		this.width = model.texture.width;
 		this.height = model.texture.height;
 		this.color = {"r":1,"g":1,"b":1,"a":1};
 	
 		// physical body
 		var bodyDef = new b2BodyDef();
+		bodyDef.userData = this;
 		if (model.fixedRotation)
 			bodyDef.fixedRotation = true;
 		if (model.dynamic) 
 			bodyDef.type = b2Body.b2_dynamicBody;
+		if (model.bullet) 
+			bodyDef.bullet = model.bullet;
 		if (model.linearDamping)
 			bodyDef.linearDamping = model.linearDamping;
 		if (model.angularDamping)
@@ -133,6 +158,14 @@ var Entity = Class.create({
 			} else if (shape.type == 'circle') {
 				shapeDef = new b2CircleShape(pixelInMeter(shape.radius));
 				shapeDef.SetLocalPosition(new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)));
+			} else if (shape.type == 'polygon') {
+				var vertices = new Array(shape.vertices.length/2);
+				for (var i=0; i<shape.vertices.length; i++) {
+					vertices[i] = {"x": shape.vertices[i*2], "y": shape.vertices[i*2+1]};
+				}
+				//shapeDef.SetAsVector(vertices, vertices.length);
+			} else {
+				alert('unknown shape type for model: ' + model.name); 
 			}
 			var fixtureDef = new b2FixtureDef();
 			fixtureDef.shape = shapeDef;

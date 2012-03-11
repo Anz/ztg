@@ -9,7 +9,7 @@
 		<script language="JavaScript" src="js/engine.js"></script>
 		<script language="JavaScript" src="js/editor.js"></script>
     </head>
-    <body style="margin:0;padding:0;height:100%;">
+    <body onload="Editor = new EditorClass(); Editor.resume();" style="margin:0;padding:0;height:100%;">
 		<div id="models">
 		</div>
 		<div id="banner">ZTG</div>
@@ -18,7 +18,7 @@
 				<div class="menuItem" onclick="Editor.mode = Editor.Modes.MOVE">MOVE</div>
 				<div class="menuItem" onclick="Editor.deleteSelection()">DELETE</div>
 				<div class="menuItem" onclick="Editor.camera = {'x':0,'y':0,'zoom':1}; Editor.mouse = {'x':0,'y':0}">ORIGIN</div>
-				<div class="menuItem" onclick="Editor.startGame()">GAME</div>
+				<div class="menuItem" onclick="clearInterval(Editor.intervalId); clearInterval(Game.intervalId); Editor.startGame()">GAME</div>
 				<div class="menuItem" onclick="Editor.showPhysicalBody=(!Editor.showPhysicalBody)">PHYSIC</div>
 				<div class="floatClear"/>
 			</div>
