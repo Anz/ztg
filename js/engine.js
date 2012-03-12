@@ -1,6 +1,26 @@
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
+		
+		var contactListener = new b2ContactListener();
+		contactListener.BeginContact = function (contact) {
+			var entity1 = contact.GetFixtureA().GetBody().GetUserData();
+			var entity2 = contact.GetFixtureB().GetBody().GetUserData();
+		
+			if (entity1.body.IsBullet()) {
+				entity1.body.SetActive(false);
+				entity2.body.ApplyImpulse(new b2Vec2(10,0), entity2.body.GetPosition());
+				//map.entities = map.entities.without(entity1);
+				//entity1.destroy();
+			}
+			if (entity2.body.IsBullet()) {
+				entity2.body.SetActive(false);
+				entity1.body.ApplyImpulse(new b2Vec2(10,0), entity1.body.GetPosition());
+				//map.entities = map.entities.without(entity2);
+				//entity2.destroy();
+			}
+		};
+		this.map.world.SetContactListener(contactListener);
 	},
 	start: function() {		
 		Render.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
@@ -20,19 +40,21 @@ var Game = Class.create({
 		this.map.world.Step(1.0/30.0, 8, 3);
 		
 		// handle collision
-		for (var contact = this.map.world.GetContactList(); contact; contact = contact.GetNext()) {
+		/*for (var contact = this.map.world.GetContactList(); contact; contact = contact.GetNext()) {
 			var entity1 = contact.GetFixtureA().GetBody().GetUserData();
 			var entity2 = contact.GetFixtureB().GetBody().GetUserData();
 			
 			if (entity1.body.IsBullet()) {
+				entity2.body.ApplyImpulse(new b2Vec2(0,10), entity2.body.GetPosition());
 				this.map.entities = this.map.entities.without(entity1);
 				entity1.destroy();
 			}
 			if (entity2.body.IsBullet()) {
+				entity1.body.ApplyImpulse(new b2Vec2(0,10), entity1.body.GetPosition());
 				this.map.entities = this.map.entities.without(entity2);
 				entity2.destroy();
 			}
-		}
+		}*/
 
 		var camera = {'x': 0, 'y': 0, 'zoom': 2};
 		var map = this.map;
@@ -49,7 +71,7 @@ var Game = Class.create({
 				if (Input.keyDown.get('13') && (!entity.lastShot || now - entity.lastShot > 200)) {
 					entity.lastShot = now;
 					var bullet = new Entity(map.world, map.models.get('bullet'), position.x+pixelInMeter(50), position.y+pixelInMeter(5), 0.1);
-					bullet.body.ApplyForce(new b2Vec2(20,0), bullet.body.GetWorldCenter());
+					bullet.body.ApplyImpulse(new b2Vec2(2,0), bullet.body.GetPosition());
 					map.entities.push(bullet);
 				}
 				camera.x = meterInPixel(position.x);
@@ -61,7 +83,12 @@ var Game = Class.create({
 		Render.clear();
 		
 		this.map.entities.sort(function (a, b) { return a.layer - b.layer; });
-		this.map.entities.each(function(entity) {		
+		this.map.entities.each(function(entity) {
+			if (entity.body.IsBullet() && !entity.body.IsActive()) {
+				entity.destroy();
+				return;
+			}
+		
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			if (!entity.width) entity.width = entity.model.texture.width;
@@ -154,16 +181,18 @@ var Entity = Class.create({
 			var shapeDef;
 			if (shape.type == 'box') {
 				shapeDef = new b2PolygonShape();
-				shapeDef.SetAsOrientedBox(pixelInMeter(shape.width)/2, pixelInMeter(shape.height)/2, new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)), 0);			
+				shapeDef.SetAsOrientedBox(pixelInMeter(shape.width)/2, pixelInMeter(shape.height)/2, new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)), 0);
+				shapeDef.radius = 10;
 			} else if (shape.type == 'circle') {
 				shapeDef = new b2CircleShape(pixelInMeter(shape.radius));
 				shapeDef.SetLocalPosition(new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)));
 			} else if (shape.type == 'polygon') {
+				shapeDef = new b2PolygonShape();
 				var vertices = new Array(shape.vertices.length/2);
-				for (var i=0; i<shape.vertices.length; i++) {
-					vertices[i] = {"x": shape.vertices[i*2], "y": shape.vertices[i*2+1]};
-				}
-				//shapeDef.SetAsVector(vertices, vertices.length);
+				for (var i=0; i<shape.vertices.length/2; i++) {
+					vertices[i] = new b2Vec2(pixelInMeter(shape.vertices[i*2]), pixelInMeter(shape.vertices[i*2+1]));
+				};
+				shapeDef.SetAsVector(vertices, vertices.length);
 			} else {
 				alert('unknown shape type for model: ' + model.name); 
 			}
@@ -184,15 +213,17 @@ var Entity = Class.create({
 			var indexStart = bodyMeshVertices.length/2;
 			if (shape.GetType() == 1) {
 				var vertices = shape.GetVertices();
-				for (var i=0; i<vertices.length; i++) {
+				bodyMeshVertices.push(meterInPixel(vertices[0].x));
+				bodyMeshVertices.push(meterInPixel(vertices[0].y));
+				bodyMeshVertices.push(meterInPixel(vertices[1].x));
+				bodyMeshVertices.push(meterInPixel(vertices[1].y));
+				for (var i=2; i<vertices.length; i++) {
 					var vertex = vertices[i];
 					bodyMeshVertices.push(meterInPixel(vertex.x));
 					bodyMeshVertices.push(meterInPixel(vertex.y));
 					
-					if (i > 0 && i % 3 == 0) {
-						bodyMeshIndices.push(indexStart);
-						bodyMeshIndices.push(indexStart+i-1);
-					}
+					bodyMeshIndices.push(indexStart);
+					bodyMeshIndices.push(indexStart+i-1);
 					bodyMeshIndices.push(indexStart+i);
 				}
 			} else {

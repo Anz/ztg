@@ -49,11 +49,11 @@
 			"name":"bullet",
 			"image": "bullet.png",
 			"layer": 0.5,
-			"fixedRotation": true,
+			"fixedRotation": false,
 			"dynamic": true,
 			"bullet": true,
 			"shapes": [
-				{"type":"circle", "x":"0", "y":"0", "radius":"4", "density": 3, "friction":1}
+				{"type":"circle", "x":"0", "y":"0", "radius":"6", "density": 1, "friction":1}
 			]
 		},
 		{
@@ -61,7 +61,7 @@
 			"image": "cave_lamp.png",
 			"layer": 0,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":1},
+				{"type":"box", "x":"0", "y":"105", "width":"256", "height":"30", "friction":1},
 				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":1}
 			]
 		},
@@ -70,11 +70,9 @@
 			"image": "cave_entrance.png",
 			"layer": 0,
 			"shapes": [
-				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.3},
-				{"type":"box", "x":"0", "y":"55", "width":"100", "height":"30", "friction":0.3},
 				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3},
 				{"type":"box", "x":"-128", "y":"0", "width":"50", "height":"256", "friction":0.3},
-				{"type":"polygon", "vertices": "[50,50,0,-50,-50,-50]", "friction":0.3}
+				{"type":"polygon", "vertices": [50,25,128,90,128,120,-128,120,-128,90,20,25], "friction":0.3}
 			]
 		},
 		{
