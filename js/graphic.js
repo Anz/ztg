@@ -51,18 +51,22 @@ var Renderer = Class.create({
 		this.gl.clear(this.gl.COLOR_BUFFER_BIT);
 	},
 	drawPoint: function (x, y, color) {
-		this.draw(this.pointMesh, color, null, x, y, 0, 0, 0);
+		this.draw(this.pointMesh, color, null, x, y, 0, 0, 0, 0, 0, 1, 1);
 	},
 	drawLine: function (sx, sy, tx, ty, color) {
-		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy));
+		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy), 0, 0, 1, 1);
 	},
 	drawFrame: function (x, y, angle, width, height, color) {
-		this.draw(this.frameMesh, color, null, x, y, angle, width, height);
+		this.draw(this.frameMesh, color, null, x, y, angle, width, height, 0, 0, 1, 1);
 	},
 	drawRect: function (x, y, angle, width, height, color, texture) {
-		this.draw(this.rectMesh, color, texture, x, y, angle, width, height);
+		this.draw(this.rectMesh, color, texture, x, y, angle, width, height, 0, 0, 1, 1);
 	},
-	draw: function (mesh, color, texture, x, y, angle, width, height) {
+	drawImage: function (image, x, y, angle, size, color, framex, framey, framew, frameh) {
+		var texture = this.loadTexture(image);
+		this.draw(this.rectMesh, color, texture, x, y, angle, texture.width*size*framew, texture.height*size*frameh, framex, framey, framew, frameh);
+	},
+	draw: function (mesh, color, texture, x, y, angle, width, height, framex, framey, framew, frameh) {	
 		// settings
 		this.gl.enable(this.gl.BLEND);
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
@@ -72,6 +76,7 @@ var Renderer = Class.create({
 		this.gl.uniform2f(this.program.position, x, y);
 		this.gl.uniform1f(this.program.rotation, -angle);
 		this.gl.uniform2f(this.program.size, width, height);
+		this.gl.uniform4f(this.program.frame, framex, -framew-framey-1, framew, frameh);
 		
 		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
 		
@@ -180,6 +185,7 @@ var Renderer = Class.create({
 							program.rotation = gl.getUniformLocation(program, "uRotation");
 							program.size = gl.getUniformLocation(program, "uSize");
 							program.color = gl.getUniformLocation(program, "uColor");
+							program.frame = gl.getUniformLocation(program, "uTextureCoord");
 							program.sampler = gl.getUniformLocation(program, "sampler");
 							
 							gl.uniform1i(program.sampler, 0);

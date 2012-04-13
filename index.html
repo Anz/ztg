@@ -6,6 +6,8 @@
 		<script language="JavaScript" src="js/box2d.js"/></script>
 		<script language="JavaScript" src="js/input.js"></script>
 		<script language="JavaScript" src="js/graphic.js"></script>
+		<script language="JavaScript" src="js/body.js"></script>
+		<script language="JavaScript" src="js/map.js"></script>
 		<script language="JavaScript" src="js/engine.js"></script>
 		<script language="JavaScript" src="js/editor.js"></script>
     </head>
@@ -19,7 +21,8 @@
 				<div class="menuItem" onclick="Editor.deleteSelection()">DELETE</div>
 				<div class="menuItem" onclick="Editor.camera = {'x':0,'y':0,'zoom':1}; Editor.mouse = {'x':0,'y':0}">ORIGIN</div>
 				<div class="menuItem" onclick="clearInterval(Editor.intervalId); clearInterval(Game.intervalId); Editor.startGame()">GAME</div>
-				<div class="menuItem" onclick="Editor.showPhysicalBody=(!Editor.showPhysicalBody)">PHYSIC</div>
+				<div class="menuItem" onclick="Editor.showPhysicalBody = !Editor.showPhysicalBody">PHYSIC</div>
+				<div class="menuItem" onclick="Editor.scriptActive = !Editor.scriptActive">SCRIPT</div>
 				<div class="floatClear"/>
 			</div>
 			<div style=''></div>

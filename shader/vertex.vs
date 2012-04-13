@@ -7,6 +7,7 @@ uniform vec2 uPosition;
 uniform float uRotation;
 uniform vec2 uSize;
 uniform vec4 uColor;
+uniform vec4 uTextureCoord;
 
 varying vec2 vTextureCoord;
 varying vec4 vColor;
@@ -38,7 +39,7 @@ void main() {
 			0.0,           0.0, 0.0, 1.0 );
 
 		gl_Position = projectionMatrix * positionMatrix * rotationMatrix * vec4(vertexPosition, 0.0, 1.0);
-		vTextureCoord = textureCoord;
+		vTextureCoord = (textureCoord+vec2(uTextureCoord.x, uTextureCoord.y))*vec2(uTextureCoord.z, uTextureCoord.w);
 		vColor = uColor;
 		gl_PointSize = 3.0;
 }

@@ -99,59 +99,6 @@ var Game = Class.create({
 	}
 });
 
-var Map = Class.create({
-	initialize: function() {
-		this.entities = [];
-		this.models = new Hash();
-		this.world = new b2World(new b2Vec2(0, -9.81), true);
-	},
-	load: function(url) {
-		var models = this.models;
-		var entities = this.entities;
-		var world = this.world;
-		
-		new Ajax.Request(url, {
-			method:'get',
-			asynchronous: false,
-			onSuccess: function(response){
-				// load file
-				var file = JSON.parse(response.responseText);
-				
-				// load models
-				file.models.each(function(model) {
-					model.texture = Render.loadTexture(model.image);
-					models.set(model.name, model);
-				});
-				
-				// load entities
-				file.entities.each(function(entity) {
-					var model = models.get(entity.modelref);
-					if(!model) {
-						alert('Model not defined: ' + entity.modelref);
-						return;
-					}
-					if (!entity.angle) entity.angle = 0;
-					entities.push(new Entity(world, model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle));
-				});
-			},
-			onFailure: function() { 
-				alert('Can not load map: ' + url); 
-			}
-		});
-	},
-	clone: function() {
-		var map = new Map();
-		map.models = this.models;
-		var models = this.models;
-		
-		this.entities.each(function(entity) {
-			var position = entity.body.GetPosition();
-			map.entities.push(new Entity(map.world, entity.model, position.x, position.y, entity.body.GetAngle()));
-		});
-		return map;
-	}
-});
-
 var Entity = Class.create({
 	initialize: function(world, model, x, y, angle) {
 		this.model = model;
@@ -160,97 +107,9 @@ var Entity = Class.create({
 		this.height = model.texture.height;
 		this.color = {"r":1,"g":1,"b":1,"a":1};
 	
-		// physical body
-		var bodyDef = new b2BodyDef();
-		bodyDef.userData = this;
-		if (model.fixedRotation)
-			bodyDef.fixedRotation = true;
-		if (model.dynamic) 
-			bodyDef.type = b2Body.b2_dynamicBody;
-		if (model.bullet) 
-			bodyDef.bullet = model.bullet;
-		if (model.linearDamping)
-			bodyDef.linearDamping = model.linearDamping;
-		if (model.angularDamping)
-			bodyDef.angularDamping = model.angularDamping;
-		bodyDef.position.Set(x, y);
-		bodyDef.angle = angle;
-		this.body = world.CreateBody(bodyDef);
-		var body = this.body;
-		model.shapes.each(function(shape) {
-			var shapeDef;
-			if (shape.type == 'box') {
-				shapeDef = new b2PolygonShape();
-				shapeDef.SetAsOrientedBox(pixelInMeter(shape.width)/2, pixelInMeter(shape.height)/2, new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)), 0);
-				shapeDef.radius = 10;
-			} else if (shape.type == 'circle') {
-				shapeDef = new b2CircleShape(pixelInMeter(shape.radius));
-				shapeDef.SetLocalPosition(new b2Vec2(pixelInMeter(shape.x), pixelInMeter(shape.y)));
-			} else if (shape.type == 'polygon') {
-				shapeDef = new b2PolygonShape();
-				var vertices = new Array(shape.vertices.length/2);
-				for (var i=0; i<shape.vertices.length/2; i++) {
-					vertices[i] = new b2Vec2(pixelInMeter(shape.vertices[i*2]), pixelInMeter(shape.vertices[i*2+1]));
-				};
-				shapeDef.SetAsVector(vertices, vertices.length);
-			} else {
-				alert('unknown shape type for model: ' + model.name); 
-			}
-			var fixtureDef = new b2FixtureDef();
-			fixtureDef.shape = shapeDef;
-			fixtureDef.restitution = typeof shape.restitution != 'undefined' ? shape.restitution : 0;
-			fixtureDef.density = typeof shape.density != 'undefined' ? shape.density : 1;
-			fixtureDef.friction = typeof shape.friction != 'undefined' ? shape.friction : 0.3;
-			body.CreateFixture(fixtureDef);
-		});
+
 		
-		var bodyMeshVertices = [];
-		var bodyMeshIndices = [];
-		
-		// physical mesh
-		for (var fixture = this.body.GetFixtureList(); fixture; fixture = fixture.GetNext()) {
-			var shape = fixture.GetShape();
-			var indexStart = bodyMeshVertices.length/2;
-			if (shape.GetType() == 1) {
-				var vertices = shape.GetVertices();
-				bodyMeshVertices.push(meterInPixel(vertices[0].x));
-				bodyMeshVertices.push(meterInPixel(vertices[0].y));
-				bodyMeshVertices.push(meterInPixel(vertices[1].x));
-				bodyMeshVertices.push(meterInPixel(vertices[1].y));
-				for (var i=2; i<vertices.length; i++) {
-					var vertex = vertices[i];
-					bodyMeshVertices.push(meterInPixel(vertex.x));
-					bodyMeshVertices.push(meterInPixel(vertex.y));
-					
-					bodyMeshIndices.push(indexStart);
-					bodyMeshIndices.push(indexStart+i-1);
-					bodyMeshIndices.push(indexStart+i);
-				}
-			} else {
-				var position = shape.GetLocalPosition();
-				var radius = meterInPixel(shape.GetRadius());
-				bodyMeshVertices.push(meterInPixel(position.x));
-				bodyMeshVertices.push(meterInPixel(position.y));
-				bodyMeshIndices.push(indexStart);
-				
-				bodyMeshVertices.push(meterInPixel(position.x));
-				bodyMeshVertices.push(radius+meterInPixel(position.y));
-				bodyMeshIndices.push(indexStart+1);
-				
-				var numberOfVertices = 32;
-				for(var i=0; i <= numberOfVertices; i++) {
-					bodyMeshVertices.push(Math.sin(i/numberOfVertices*2*Math.PI)*radius+meterInPixel(position.x));
-					bodyMeshVertices.push(Math.cos(i/numberOfVertices*2*Math.PI)*radius+meterInPixel(position.y));
-				
-					bodyMeshIndices.push(indexStart+i+2);
-					if (i < numberOfVertices) {
-						bodyMeshIndices.push(indexStart);
-						bodyMeshIndices.push(indexStart+i+2);
-					}
-				}
-			}
-		}
-		this.body.mesh = Render.createMesh(Render.gl.TRIANGLES, bodyMeshVertices, null, bodyMeshIndices);
+
 
 	},
 	destroy: function() {

@@ -7,11 +7,11 @@ var Editor;
   Editor.resume();
 });*/
 
+var requestAnimationFrame = typeof(mozRequestAnimationFrame) != 'undefined' ? mozRequestAnimationFrame : webkitRequestAnimationFrame;
+
 var EditorClass = Class.create({
 	initialize: function() {
-		this.map = new Map();	  
-		this.map.load('data/map.json');
-	
+		this.map = loadMap('data/ztg1');	
 		
 		this.red = {"r":1,"g":0,"b":0,"a":0.3};
 		this.green = {"r":0,"g":1,"b":0,"a":0.3};
@@ -21,7 +21,7 @@ var EditorClass = Class.create({
 		this.darkgrey = {"r":0.3,"g":0.3,"b":0.3,"a":1};
 		this.white = {"r":1,"g":1,"b":1,"a":1};
 		
-		var map = this.map;
+		/*var map = this.map;
 		var parent = $('models');
 		this.map.models.keys().each(function(key) {
 			var model = map.models.get(key);
@@ -32,7 +32,7 @@ var EditorClass = Class.create({
 			div.setAttribute('onclick', 'Editor.addEntity("'+model.name+'")');
 			div.appendChild(image);
 			parent.appendChild(div);
-		});
+		});*/
 		
 		this.canvas = $('canvas');
 		
@@ -46,6 +46,9 @@ var EditorClass = Class.create({
 		this.mode = this.Modes.EDIT;
 		
 		this.showPhysicalBody = false;
+		this.scriptActive = false;
+		
+		this.time = new Date().getTime();
 	},
 	resume: function() {
 		var obj = this;
@@ -57,9 +60,20 @@ var EditorClass = Class.create({
 		
 		Render.backgroundColor = this.darkgrey;
 		
-		this.intervalId = setInterval(function() { obj.main(); }, 1000/30);
+		this.gameLoop = true;
+		
+		//this.intervalId = setInterval(function() { obj.main(); }, 1000/30);
+		requestAnimationFrame (function() { obj.main(); });
 	},
-	main: function() {		
+	main: function() {	
+		var obj = this;
+		requestAnimationFrame (function() { obj.main(); });
+		
+		var current = new Date().getTime();
+		if (current - this.time < 1000/60) {
+			return;
+		}
+	
 		// calculate physics
 		this.map.world.Step(1/30, 8, 3);
 			
@@ -69,10 +83,12 @@ var EditorClass = Class.create({
 		}
 
 		// camera moving
-		if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
-		if (Input.keyDown.get('65')) this.camera.x -= 20 / this.camera.zoom;
-		if (Input.keyDown.get('83')) this.camera.y -= 20 / this.camera.zoom;
-		if (Input.keyDown.get('68')) this.camera.x += 20 / this.camera.zoom;
+		if (!this.scriptActive) {
+			if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
+			if (Input.keyDown.get('65')) this.camera.x -= 20 / this.camera.zoom;
+			if (Input.keyDown.get('83')) this.camera.y -= 20 / this.camera.zoom;
+			if (Input.keyDown.get('68')) this.camera.x += 20 / this.camera.zoom;
+		}
 		
 		// camera zoom
 		this.camera.zoom = Math.min(10, Math.max(0.05, this.camera.zoom-Input.readMouseWheel()*this.camera.zoom));
@@ -96,21 +112,53 @@ var EditorClass = Class.create({
 		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, this.yellow);
 		
 		// draw entities
-		this.map.entities.sort(function (a, b) {	return a.layer - b.layer; });
+		this.map.entities.sort(function (a, b){ return a.model.layer - b.model.layer; });
+		var map = this.map;
 		var camera = this.camera;
+		var world = this.map.world;
+		var scriptActive = this.scriptActive;
+		
 		this.map.entities.each(function(entity) {
+			if (typeof entity.body == 'undefined') {
+				entity.body = createBodyFromModel(world, entity.model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle);
+				entity.body.SetUserData(entity);
+			}
+		
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
-			if (!entity.width) entity.width = entity.model.texture.width;
-			if (!entity.height) entity.height = entity.model.texture.height;
-			if (!entity.width || !entity.height) return;
-			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
+			
+			if (scriptActive) {
+				if (typeof(entity.model.main) != 'undefined') {
+					entity.model.main(map, camera, entity);
+				}
+				
+				if (typeof(entity.model.oncontact) != 'undefined') {
+					for (var contact = entity.body.GetContactList(); contact; contact = contact.next) {						
+						entity.model.oncontact(map, camera, entity, contact.other.GetUserData());
+					}
+				}
+			}
+			
+			Render.drawImage(entity.model.texture.file, 
+				(meterInPixel(position.x)-camera.x)*camera.zoom, 
+				(meterInPixel(position.y)-camera.y)*camera.zoom, 
+				angle, 
+				camera.zoom, 
+				entity.color,
+				entity.framex, 
+				entity.framey, 
+				1.0/entity.model.texture.xframes,
+				1.0/entity.model.texture.yframes);
 		});
 		
 		// draw collison box
-		if (Editor.showPhysicalBody == true) {
+		if (Editor.showPhysicalBody) {
 			var camera = this.camera;
 			this.map.entities.each(function(entity) {
+				if (typeof(entity.body.mesh) == 'undefined') {
+					entity.body.mesh = createMeshFromBody(entity.body);
+				}
+			
 				var position = entity.body.GetPosition();
 				var angle = entity.body.GetAngle();
 				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom);
@@ -122,6 +170,8 @@ var EditorClass = Class.create({
 			Render.drawRect(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":1,"a":1}, selected.model.texture);
 			Render.drawFrame(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 		});
+		
+		this.time = current;
 	},
 	startGame: function() {
 		clearInterval(this.id);			

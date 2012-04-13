@@ -1,0 +1,115 @@
+{
+	"textures": [
+		{ "id": "john", "file":"john.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
+		{ "id": "head", "file":"head.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "bullet", "file":"bullet.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "cave_lamp", "file":"cave_lamp.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "cave_entrance", "file":"cave_entrance.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "cave_entrance_top", "file":"cave_entrance_top.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "cave_end", "file":"cave_end.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "box", "file":"box.png", "xframes": 1, "yframes": 1, "animations": [] }
+	],
+	"models": [
+		{
+			"id":"john",
+			"textureid": "john",
+			"layer": 0,
+			"dynamic": true,
+			"main":"john_test",
+			"fixedRotation": true,
+			"linearDamping": 6,
+			"shapes": [
+				{"type":"circle", "x":"0", "y":"-3", "radius":"6", "density":4,"friction":6},
+				{"type":"box", "x":"0", "y":"22", "width":"12", "height":"52", "density":4, "friction":6},
+				{"type":"circle", "x":"0", "y":"48", "radius":"6", "density":4, "friction":6}
+			]
+		},
+		{
+			"id":"head",
+			"textureid": "head",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"circle", "x":"0", "y":"0", "radius":"8", "friction":1}
+			]
+		},
+		{
+			"id":"bullet",
+			"textureid": "bullet",
+			"layer": 0.5,
+			"fixedRotation": false,
+			"dynamic": true,
+			"bullet": true,
+			"shapes": [
+				{"type":"circle", "x":"0", "y":"0", "radius":"6", "density": 0.001, "friction":1}
+			]
+		},
+		{
+			"id":"Level",
+			"textureid": "cave_lamp",
+			"layer": 0,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"105", "width":"256", "height":"30", "friction":1},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":1}
+			]
+		},
+		{
+			"id":"CaveEntrance", 
+			"textureid": "cave_entrance",
+			"layer": 0,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3},
+				{"type":"box", "x":"-128", "y":"0", "width":"50", "height":"256", "friction":0.3},
+				{"type":"polygon", "vertices": [50,25,128,90,128,120,-128,120,-128,90,20,25], "friction":0.3}
+			]
+		},
+		{
+			"id":"CaveEntranceTop",
+			"textureid": "cave_entrance_top",
+			"layer": 1,
+			"shapes": []
+		},
+		{
+			"id":"CaveEnd",
+			"textureid": "cave_end",
+			"layer": 0,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.1},
+				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.1},
+				{"type":"box", "x":"128", "y":"0", "width":"50", "height":"256", "friction":0.1}
+			]
+		},
+		{
+			"id":"Box",
+			"textureid": "box",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1, "friction":1}
+			]
+		}
+	],
+	"entities": [
+		{ "modelid": "CaveEntrance", "x": -256, "y": 0},
+		{ "modelid": "CaveEntranceTop", "x": -256, "y": 0},
+		{ "modelid": "Level", "x": 0, "y": 0},
+		{ "modelid": "Level", "x": 256, "y": 0},
+		{ "modelid": "Level", "x": 512, "y": 0},
+		{ "modelid": "CaveEnd", "x": 768, "y": 0},
+		{ "modelid": "Box", "x": 280, "y": -55},
+		{ "modelid": "Box", "x": 280, "y": -23},
+		{ "modelid": "Box", "x": 280, "y": 9},
+		{ "modelid": "Box", "x": 280, "y": 41},
+		{ "modelid": "Box", "x": 240, "y": -55},
+		{ "modelid": "Box", "x": 240, "y": -23},
+		{ "modelid": "Box", "x": 240, "y": 9},
+		{ "modelid": "Box", "x": 240, "y": 41},
+		{ "modelid": "Box", "x": 200, "y": -55},
+		{ "modelid": "Box", "x": 200, "y": -23},
+		{ "modelid": "Box", "x": 200, "y": 9},
+		{ "modelid": "Box", "x": 200, "y": 41},
+		{ "modelid": "Box", "x": -300, "y": -23},
+		{ "modelid": "Box", "x": -300, "y": 0},
+		{ "modelid": "john", "x": 0, "y": -40}
+	]
+}
