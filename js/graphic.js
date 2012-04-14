@@ -62,9 +62,9 @@ var Renderer = Class.create({
 	drawRect: function (x, y, angle, width, height, color, texture) {
 		this.draw(this.rectMesh, color, texture, x, y, angle, width, height, 0, 0, 1, 1);
 	},
-	drawImage: function (image, x, y, angle, size, color, framex, framey, framew, frameh) {
+	drawImage: function (image, x, y, angle, size, color, framex, framey, framew, frameh, flip) {
 		var texture = this.loadTexture(image);
-		this.draw(this.rectMesh, color, texture, x, y, angle, texture.width*size*framew, texture.height*size*frameh, framex, framey, framew, frameh);
+		this.draw(this.rectMesh, color, texture, x, y, angle, texture.width*size*framew*(flip?-1:1), texture.height*Math.abs(size)*frameh, framex, framey, framew, frameh);
 	},
 	draw: function (mesh, color, texture, x, y, angle, width, height, framex, framey, framew, frameh) {	
 		// settings
@@ -76,7 +76,7 @@ var Renderer = Class.create({
 		this.gl.uniform2f(this.program.position, x, y);
 		this.gl.uniform1f(this.program.rotation, -angle);
 		this.gl.uniform2f(this.program.size, width, height);
-		this.gl.uniform4f(this.program.frame, framex, -framew-framey-1, framew, frameh);
+		this.gl.uniform4f(this.program.frame, framex, framew-framey-1, framew, frameh);
 		
 		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
 		

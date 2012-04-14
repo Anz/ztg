@@ -61,6 +61,7 @@ function loadMap(url) {
 				entity.angle = typeof(entity.angle) == 'undefined' ? 0 : entity.angle;
 				entity.framex = 0;
 				entity.framey = 0;
+				entity.flip = false;
 				map.entities.push(entity);
 			});
 		},

@@ -127,6 +127,18 @@ var EditorClass = Class.create({
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			
+			Render.drawImage(entity.model.texture.file, 
+				(meterInPixel(position.x)-camera.x)*camera.zoom, 
+				(meterInPixel(position.y)-camera.y)*camera.zoom, 
+				angle, 
+				camera.zoom, 
+				entity.color,
+				entity.framex, 
+				entity.framey, 
+				1.0/entity.model.texture.xframes,
+				1.0/entity.model.texture.yframes,
+				entity.flip);
+			
 			if (scriptActive) {
 				if (typeof(entity.model.main) != 'undefined') {
 					entity.model.main(map, camera, entity);
@@ -138,17 +150,6 @@ var EditorClass = Class.create({
 					}
 				}
 			}
-			
-			Render.drawImage(entity.model.texture.file, 
-				(meterInPixel(position.x)-camera.x)*camera.zoom, 
-				(meterInPixel(position.y)-camera.y)*camera.zoom, 
-				angle, 
-				camera.zoom, 
-				entity.color,
-				entity.framex, 
-				entity.framey, 
-				1.0/entity.model.texture.xframes,
-				1.0/entity.model.texture.yframes);
 		});
 		
 		// draw collison box

@@ -1,13 +1,18 @@
 {
 	"textures": [
 		{ "id": "john", "file":"john.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
+		{ "id": "zombie", "file":"zombie.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
+		{ "id": "zombie_head", "file":"zombie_head.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "zombie_body", "file":"zombie_body.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "zombie_leg", "file":"zombie_leg.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "head", "file":"head.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "bullet", "file":"bullet.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "cave_lamp", "file":"cave_lamp.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "cave_entrance", "file":"cave_entrance.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "cave_entrance_top", "file":"cave_entrance_top.png", "xframes": 1, "yframes": 1, "animations": [] },
 		{ "id": "cave_end", "file":"cave_end.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "box", "file":"box.png", "xframes": 1, "yframes": 1, "animations": [] }
+		{ "id": "box", "file":"box.png", "xframes": 1, "yframes": 1, "animations": [] },
+		{ "id": "blood", "file":"blood.png", "xframes": 1, "yframes": 1, "animations": [] }
 	],
 	"models": [
 		{
@@ -15,13 +20,52 @@
 			"textureid": "john",
 			"layer": 0,
 			"dynamic": true,
-			"main":"john_test",
 			"fixedRotation": true,
 			"linearDamping": 6,
 			"shapes": [
-				{"type":"circle", "x":"0", "y":"-3", "radius":"6", "density":4,"friction":6},
-				{"type":"box", "x":"0", "y":"22", "width":"12", "height":"52", "density":4, "friction":6},
-				{"type":"circle", "x":"0", "y":"48", "radius":"6", "density":4, "friction":6}
+				{"type":"circle", "x":"0", "y":"-37", "radius":"6", "density":4,"friction":6},
+				{"type":"box", "x":"0", "y":"-13", "width":"12", "height":"52", "density":4, "friction":6},
+				{"type":"circle", "x":"0", "y":"16", "radius":"6", "density":4, "friction":6}
+			]
+		},
+		{
+			"id":"zombie",
+			"textureid": "zombie",
+			"layer": 0,
+			"dynamic": true,
+			"fixedRotation": true,
+			"linearDamping": 12,
+			"shapes": [
+				{"type":"circle", "x":"0", "y":"-37", "radius":"6", "density":4,"friction":0},
+				{"type":"box", "x":"0", "y":"-13", "width":"12", "height":"52", "density":4, "friction":0},
+				{"type":"circle", "x":"0", "y":"16", "radius":"6", "density":4, "friction":0}
+			]
+		},
+		{
+			"id":"zombie_head",
+			"textureid": "zombie_head",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"0", "width":"15", "height":"22", "density":1, "friction":1}
+			]
+		},
+		{
+			"id":"zombie_body",
+			"textureid": "zombie_body",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"0", "width":"15", "height":"22", "density":1, "friction":1}
+			]
+		},
+		{
+			"id":"zombie_leg",
+			"textureid": "zombie_leg",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"3", "y":"0", "width":"8", "height":"22", "density":1, "friction":1}
 			]
 		},
 		{
@@ -87,6 +131,15 @@
 			"shapes": [
 				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1, "friction":1}
 			]
+		},
+		{
+			"id":"blood",
+			"textureid": "blood",
+			"layer": 0.5,
+			"dynamic": true,
+			"shapes": [
+				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1, "friction":1}
+			]
 		}
 	],
 	"entities": [
@@ -110,6 +163,11 @@
 		{ "modelid": "Box", "x": 200, "y": 41},
 		{ "modelid": "Box", "x": -300, "y": -23},
 		{ "modelid": "Box", "x": -300, "y": 0},
-		{ "modelid": "john", "x": 0, "y": -40}
+		{ "modelid": "john", "x": 80, "y": -40},
+		{ "modelid": "zombie", "x": 400, "y": -40},
+		{ "modelid": "zombie", "x": 450, "y": -40},
+		{ "modelid": "zombie", "x": 500, "y": -40},
+		{ "modelid": "zombie", "x": 550, "y": -40},
+		{ "modelid": "blood", "x": 0, "y": 0}
 	]
 }

@@ -1,26 +1,6 @@
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
-		
-		var contactListener = new b2ContactListener();
-		contactListener.BeginContact = function (contact) {
-			var entity1 = contact.GetFixtureA().GetBody().GetUserData();
-			var entity2 = contact.GetFixtureB().GetBody().GetUserData();
-		
-			if (entity1.body.IsBullet()) {
-				entity1.body.SetActive(false);
-				entity2.body.ApplyImpulse(new b2Vec2(10,0), entity2.body.GetPosition());
-				//map.entities = map.entities.without(entity1);
-				//entity1.destroy();
-			}
-			if (entity2.body.IsBullet()) {
-				entity2.body.SetActive(false);
-				entity1.body.ApplyImpulse(new b2Vec2(10,0), entity1.body.GetPosition());
-				//map.entities = map.entities.without(entity2);
-				//entity2.destroy();
-			}
-		};
-		this.map.world.SetContactListener(contactListener);
 	},
 	start: function() {		
 		Render.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
@@ -35,26 +15,8 @@ var Game = Class.create({
 			return;
 		}
 		
-		
 		// physics
 		this.map.world.Step(1.0/30.0, 8, 3);
-		
-		// handle collision
-		/*for (var contact = this.map.world.GetContactList(); contact; contact = contact.GetNext()) {
-			var entity1 = contact.GetFixtureA().GetBody().GetUserData();
-			var entity2 = contact.GetFixtureB().GetBody().GetUserData();
-			
-			if (entity1.body.IsBullet()) {
-				entity2.body.ApplyImpulse(new b2Vec2(0,10), entity2.body.GetPosition());
-				this.map.entities = this.map.entities.without(entity1);
-				entity1.destroy();
-			}
-			if (entity2.body.IsBullet()) {
-				entity1.body.ApplyImpulse(new b2Vec2(0,10), entity1.body.GetPosition());
-				this.map.entities = this.map.entities.without(entity2);
-				entity2.destroy();
-			}
-		}*/
 
 		var camera = {'x': 0, 'y': 0, 'zoom': 2};
 		var map = this.map;
