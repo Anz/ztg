@@ -1,4 +1,5 @@
 {
+	"classes": ["box"],
 	"textures": [
 		{ "id": "john", "file":"john.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
 		{ "id": "zombie", "file":"zombie.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },

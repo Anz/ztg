@@ -22,11 +22,14 @@ var Map = Class.create({
 function loadMap(url) {
 	var map = new Map();
 	
+	// head element
+	var elementHead = document.getElementsByTagName("head")[0];
+	
 	// load javascript
 	var script = document.createElement('script');
 	script.setAttribute("type","text/javascript");
 	script.setAttribute("src", url + '.js');
-	document.getElementsByTagName("head")[0].appendChild(script);
+	elementHead.appendChild(script);
 
 	// load json
 	new Ajax.Request(url + '.json', {
@@ -35,6 +38,21 @@ function loadMap(url) {
 		onSuccess: function(response){
 			// load file
 			var file = JSON.parse(response.responseText);
+			
+			// load classes
+			file.classes.each(function(clazz) {
+				new Ajax.Request('ztg/src/' + clazz + '.js', {
+					method:'get',
+					asynchronous: false,
+					onSuccess: function(response){	
+						var script = document.createElement('script');
+						script.type = "text/javascript";
+						script.text = response.responseText;
+						elementHead.appendChild(script);
+					}
+				});
+				alert(window['Box']);
+			});
 			
 			// load textures
 			file.textures.each(function(texture) {
@@ -64,6 +82,7 @@ function loadMap(url) {
 				entity.flip = false;
 				map.entities.push(entity);
 			});
+
 		},
 		onFailure: function() { 
 			alert('Can not load map: ' + url); 
