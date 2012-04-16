@@ -76,7 +76,7 @@ var Renderer = Class.create({
 		this.gl.uniform2f(this.program.position, x, y);
 		this.gl.uniform1f(this.program.rotation, -angle);
 		this.gl.uniform2f(this.program.size, width, height);
-		this.gl.uniform4f(this.program.frame, framex, framew-framey-1, framew, frameh);
+		this.gl.uniform4f(this.program.frame, framex, frameh-framey-1, framew, frameh);
 		
 		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
 		

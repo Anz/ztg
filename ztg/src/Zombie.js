@@ -6,26 +6,26 @@ var Zombie = Class.create(Entity, {
 		// fixture defintion
 		var fixtureDef = new b2FixtureDef();
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
-		fixtureDef.density = this.getValue(attributes.density, 4);
+		fixtureDef.density = this.getValue(attributes.density, 4.2);
 		fixtureDef.friction = this.getValue(attributes.friction, 17);
 	
 		// box shape definition
 		var shapeDef = new b2PolygonShape();
-		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(-13)), 0);
+		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(-25)), 0);
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
 		// circle top shape definition
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-37)));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-50)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
 		// circle bottom shape definition
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(16)));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(0)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
@@ -90,7 +90,7 @@ var Zombie = Class.create(Entity, {
 
 
 		this.framex = Math.round(this.k);
-		if (Math.abs(this.body.GetLinearVelocity().x) < 5) {
+		if (Math.abs(this.body.GetLinearVelocity().x) < 2) {
 			this.body.ApplyImpulse(new b2Vec2(factor*2,0), this.body.GetPosition());
 		}
 		this.k += 0.15;

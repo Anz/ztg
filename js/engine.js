@@ -115,6 +115,8 @@ var Entity = Class.create({
 	},
 	onContact: function(entity) {
 	},
+	onAction: function() {
+	},
 	getValue: function (value, defaultValue) {
 		return typeof(value) != 'undefined' ? value : defaultValue;
 	}

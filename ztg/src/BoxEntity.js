@@ -10,7 +10,7 @@ var BoxEntity = Class.create(Entity, {
 		// shape
 		var shapeDef = new b2PolygonShape();
 		shapeDef.SetAsOrientedBox(pixelInMeter(this.texture.width)/2, pixelInMeter(this.texture.height)/2, new b2Vec2(0, 0), 0);
-		//shapeDef.radius = 12;
+		shapeDef.radius = 0;
 		
 		// fixture
 		var fixtureDef = new b2FixtureDef();

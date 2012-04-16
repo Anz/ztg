@@ -56,7 +56,7 @@ function loadMap(url) {
 			});
 			
 			// load entities
-			file.entities2.each(function(entityDef) {
+			file.entities.each(function(entityDef) {
 				var entity = new this[entityDef.type](map, entityDef);
 				entity.framex = 0;
 				entity.framey = 0;

@@ -1,9 +1,10 @@
 {
-	"types": ["BoxEntity", "Bullet", "Cave", "Circle", "ImageEntity", "Player", "Stack", "Zombie"],
+	"types": ["BoxEntity", "Bullet", "Cave", "Circle", "ImageEntity", "Player", "Stack", "Switch", "Zombie"],
 	
-	"entities2": [
+	"entities": [
 		{"type": "Cave", "texture": "map.png", "x": 0, "y": 0, "modelid": "CaveEntrance"},
 		
+		{"type": "Stack", "texture": "box.png", "x": 500, "y": 0, "dynamic": true, "stacksize": 1},
 		{"type": "Stack", "texture": "box.png", "x": 600, "y": 0, "dynamic": true, "stacksize": 2},
 		{"type": "Stack", "texture": "box.png", "x": 700, "y": 0, "dynamic": true, "stacksize": 3},
 		{"type": "Stack", "texture": "box.png", "x": 800, "y": 0, "dynamic": true, "stacksize": 4},
@@ -14,11 +15,19 @@
 		
 		{"type": "Player", "texture": "john.png", "x": 0, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
 		
-		{"type": "Zombie", "texture": "zombie.png", "x": -700, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
-		{"type": "Zombie", "texture": "zombie.png", "x": -800, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
-		{"type": "Zombie", "texture": "zombie.png", "x": -900, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
-		{"type": "Zombie", "texture": "zombie.png", "x": -1000, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
-		{"type": "Zombie", "texture": "zombie.png", "x": -1100, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
-		{"type": "Zombie", "texture": "zombie.png", "x": -1200, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true}
+		{"type": "Zombie", "texture": "zombie.png", "x": -1500, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1600, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1700, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1800, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1900, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		
+		{"type": "Switch", "texture": "locker.png", "x": -600, "y": -20, "frames": 4, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -650, "y": -20, "frames": 4, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -770, "y": -20, "frames": 4, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -820, "y": -20, "frames": 4, "animations":1},
+		
+		{"type": "Stack", "texture": "box.png", "x": 1500, "y": 0, "dynamic": true, "stacksize": 100},
+		
+		{"type": "Stack", "subtype": "Circle", "texture": "head.png", "x": -2000, "y": 0, "dynamic": true, "stacksize": 50}
 	]
 }

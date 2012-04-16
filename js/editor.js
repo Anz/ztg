@@ -155,12 +155,6 @@ var EditorClass = Class.create({
 				if (typeof(entity.body.mesh) == 'undefined') {
 					entity.body.mesh = createMeshFromBody(entity.body);
 				}
-				
-				/*if (entity.body.GetFixtureList().GetShape().GetVertices().length == 2) {
-					var vertex = entity.body.GetFixtureList().GetShape().GetVertices();
-					//alert('asdf' + vertex[0].x + '-' + vertex[1].y);
-					Render.drawLine((meterInPixel(vertex[0].x)-camera.x)*camera.zoom, (meterInPixel(vertex[0].y)-camera.y-10)*camera.zoom, (meterInPixel(vertex[1].x)-camera.x)*camera.zoom, (meterInPixel(vertex[1].y)-camera.y-10)*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
-				}*/
 			
 				var position = entity.body.GetPosition();
 				var angle = entity.body.GetAngle();

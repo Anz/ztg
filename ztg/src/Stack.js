@@ -10,7 +10,7 @@ var Stack = Class.create(Entity, {
 		// shape
 		var shapeDef = new b2PolygonShape();
 		shapeDef.SetAsOrientedBox(pixelInMeter(this.texture.width)/2, pixelInMeter(this.texture.height)/2, new b2Vec2(0, 0), 0);
-		shapeDef.radius = 10;
+		shapeDef.radius = 0;
 		
 		// fixture
 		var fixtureDef = new b2FixtureDef();
@@ -23,7 +23,7 @@ var Stack = Class.create(Entity, {
 		attributes.type = this.getValue(attributes.subtype, 'BoxEntity');
 		for (var i = 0; i < this.getValue(attributes.stacksize, 1) - 1; i++) {
 			attributes.y += this.texture.height;
-			var entity = new global['BoxEntity'](this.map, attributes);
+			var entity = new global[attributes.type](this.map, attributes);
 			entity.angle = 0;
 			entity.framex = 0;
 			entity.framey = 0;
