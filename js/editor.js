@@ -112,22 +112,20 @@ var EditorClass = Class.create({
 		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, this.yellow);
 		
 		// draw entities
-		this.map.entities.sort(function (a, b){ return a.model.layer - b.model.layer; });
+		this.map.entities.sort(function (a, b){ return a.layer - b.layer; });
 		var map = this.map;
 		var camera = this.camera;
 		var world = this.map.world;
 		var scriptActive = this.scriptActive;
 		
-		this.map.entities.each(function(entity) {
-			if (typeof entity.body == 'undefined') {
-				entity.body = createBodyFromModel(world, entity.model, pixelInMeter(entity.x), pixelInMeter(entity.y), entity.angle);
-				entity.body.SetUserData(entity);
-			}
-		
+		this.map.entities.each(function(entity) {		
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			
-			Render.drawImage(entity.model.texture.file, 
+			var frames = 1.0/entity.frames;
+			var animations = 1.0/entity.animations;
+			
+			Render.drawImage(entity.texture.name, 
 				(meterInPixel(position.x)-camera.x)*camera.zoom, 
 				(meterInPixel(position.y)-camera.y)*camera.zoom, 
 				angle, 
@@ -135,19 +133,17 @@ var EditorClass = Class.create({
 				entity.color,
 				entity.framex, 
 				entity.framey, 
-				1.0/entity.model.texture.xframes,
-				1.0/entity.model.texture.yframes,
+				frames,
+				animations,
 				entity.flip);
 			
 			if (scriptActive) {
-				if (typeof(entity.model.main) != 'undefined') {
-					entity.model.main(map, camera, entity);
-				}
+				// step
+				entity.onPrestep(camera);
 				
-				if (typeof(entity.model.oncontact) != 'undefined') {
-					for (var contact = entity.body.GetContactList(); contact; contact = contact.next) {						
-						entity.model.oncontact(map, camera, entity, contact.other.GetUserData());
-					}
+				// contact
+				for (var contact = entity.body.GetContactList(); contact; contact = contact.next) {						
+					entity.onContact(contact.other.GetUserData());
 				}
 			}
 		});

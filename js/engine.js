@@ -61,21 +61,62 @@ var Game = Class.create({
 	}
 });
 
+function texcb(texture) {
+	alert('callback');
+}
+
 var Entity = Class.create({
-	initialize: function(world, model, x, y, angle) {
-		this.model = model;
-		this.layer = model.layer;
-		this.width = model.texture.width;
-		this.height = model.texture.height;
-		this.color = {"r":1,"g":1,"b":1,"a":1};
-	
-
+	initialize: function(map, attributes) {
+		// attributes
+		this.map = map;
+		this.world = map.world;
+		this.layer = this.getValue(attributes.layer, 0.5);
+		this.angle = this.getValue(attributes.angle, 0);
+		this.frame = 0;
+		this.animation = 0;
+		this.frames = this.getValue(attributes.frames, 1);
+		this.animations = this.getValue(attributes.animations, 1);
+		this.color = this.getValue(attributes.color, {r:1,g:1,b:1,a:1});
+		this.texture = Render.loadTexture(attributes.texture);
 		
+		// body defintion
+		var bodyDef = new b2BodyDef();
+		bodyDef.fixedRotation = this.getValue(attributes.fixedRotation, false);
+		bodyDef.type = this.getValue(attributes.dynamic, false) ? b2Body.b2_dynamicBody : b2Body.b2_staticBody;
+		bodyDef.bullet = this.getValue(attributes.bullet, false);
+		bodyDef.linearDamping = this.getValue(attributes.linearDamping, 0);
+		bodyDef.angularDamping = this.getValue(attributes.angularDamping, 0);
+		bodyDef.position.Set(this.getValue(pixelInMeter(attributes.x), 0), this.getValue(pixelInMeter(attributes.y), 0));
+		bodyDef.position.Set(this.getValue(pixelInMeter(attributes.x), 0), this.getValue(pixelInMeter(attributes.y), 0));
+		bodyDef.angle = this.getValue(attributes.angle, 0);
 
-
+		// body
+		this.body = this.world.CreateBody(bodyDef);
+		this.body.SetUserData(this);
+		
+		this.born = new Date().getTime();
+		
+		// call subclass		
+		this.onCreate(attributes);
 	},
-	destroy: function() {
-		this.body.GetWorld().DestroyBody(this.body);
+	onCreate: function(attributes) {
+	},
+	onPrestep: function(camera) {
+		if (typeof(this.ttl) != 'undefined') {
+			this.color.a = 1.0 - 1.0/this.ttl*(new Date().getTime() - this.born);
+			if (this.color.a <= 0) {
+				this.map.world.DestroyBody(this.body);
+				this.map.entities = this.map.entities.without(this);
+			}
+		}
+		this.onStep(camera);
+	},
+	onStep: function(camera) {
+	},
+	onContact: function(entity) {
+	},
+	getValue: function (value, defaultValue) {
+		return typeof(value) != 'undefined' ? value : defaultValue;
 	}
 });
 

@@ -1,174 +1,24 @@
 {
-	"classes": ["box"],
-	"textures": [
-		{ "id": "john", "file":"john.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
-		{ "id": "zombie", "file":"zombie.png", "xframes": 8, "yframes": 4, "animations": ["walk","jump"] },
-		{ "id": "zombie_head", "file":"zombie_head.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "zombie_body", "file":"zombie_body.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "zombie_leg", "file":"zombie_leg.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "head", "file":"head.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "bullet", "file":"bullet.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "cave_lamp", "file":"cave_lamp.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "cave_entrance", "file":"cave_entrance.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "cave_entrance_top", "file":"cave_entrance_top.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "cave_end", "file":"cave_end.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "box", "file":"box.png", "xframes": 1, "yframes": 1, "animations": [] },
-		{ "id": "blood", "file":"blood.png", "xframes": 1, "yframes": 1, "animations": [] }
-	],
-	"models": [
-		{
-			"id":"john",
-			"textureid": "john",
-			"layer": 0,
-			"dynamic": true,
-			"fixedRotation": true,
-			"linearDamping": 6,
-			"shapes": [
-				{"type":"circle", "x":"0", "y":"-37", "radius":"6", "density":4,"friction":6},
-				{"type":"box", "x":"0", "y":"-13", "width":"12", "height":"52", "density":4, "friction":6},
-				{"type":"circle", "x":"0", "y":"16", "radius":"6", "density":4, "friction":6}
-			]
-		},
-		{
-			"id":"zombie",
-			"textureid": "zombie",
-			"layer": 0,
-			"dynamic": true,
-			"fixedRotation": true,
-			"linearDamping": 12,
-			"shapes": [
-				{"type":"circle", "x":"0", "y":"-37", "radius":"6", "density":4,"friction":0},
-				{"type":"box", "x":"0", "y":"-13", "width":"12", "height":"52", "density":4, "friction":0},
-				{"type":"circle", "x":"0", "y":"16", "radius":"6", "density":4, "friction":0}
-			]
-		},
-		{
-			"id":"zombie_head",
-			"textureid": "zombie_head",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"15", "height":"22", "density":1, "friction":1}
-			]
-		},
-		{
-			"id":"zombie_body",
-			"textureid": "zombie_body",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"15", "height":"22", "density":1, "friction":1}
-			]
-		},
-		{
-			"id":"zombie_leg",
-			"textureid": "zombie_leg",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"box", "x":"3", "y":"0", "width":"8", "height":"22", "density":1, "friction":1}
-			]
-		},
-		{
-			"id":"head",
-			"textureid": "head",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"circle", "x":"0", "y":"0", "radius":"8", "friction":1}
-			]
-		},
-		{
-			"id":"bullet",
-			"textureid": "bullet",
-			"layer": 0.5,
-			"fixedRotation": false,
-			"dynamic": true,
-			"bullet": true,
-			"shapes": [
-				{"type":"circle", "x":"0", "y":"0", "radius":"6", "density": 0.001, "friction":1}
-			]
-		},
-		{
-			"id":"Level",
-			"textureid": "cave_lamp",
-			"layer": 0,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"105", "width":"256", "height":"30", "friction":1},
-				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":1}
-			]
-		},
-		{
-			"id":"CaveEntrance", 
-			"textureid": "cave_entrance",
-			"layer": 0,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.3},
-				{"type":"box", "x":"-128", "y":"0", "width":"50", "height":"256", "friction":0.3},
-				{"type":"polygon", "vertices": [50,25,128,90,128,120,-128,120,-128,90,20,25], "friction":0.3}
-			]
-		},
-		{
-			"id":"CaveEntranceTop",
-			"textureid": "cave_entrance_top",
-			"layer": 1,
-			"shapes": []
-		},
-		{
-			"id":"CaveEnd",
-			"textureid": "cave_end",
-			"layer": 0,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"95", "width":"256", "height":"50", "friction":0.1},
-				{"type":"box", "x":"0", "y":"-95", "width":"256", "height":"50", "friction":0.1},
-				{"type":"box", "x":"128", "y":"0", "width":"50", "height":"256", "friction":0.1}
-			]
-		},
-		{
-			"id":"Box",
-			"textureid": "box",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1, "friction":1}
-			]
-		},
-		{
-			"id":"blood",
-			"textureid": "blood",
-			"layer": 0.5,
-			"dynamic": true,
-			"shapes": [
-				{"type":"box", "x":"0", "y":"0", "width":"32", "height":"32", "density":1, "friction":1}
-			]
-		}
-	],
-	"entities": [
-		{ "modelid": "CaveEntrance", "x": -256, "y": 0},
-		{ "modelid": "CaveEntranceTop", "x": -256, "y": 0},
-		{ "modelid": "Level", "x": 0, "y": 0},
-		{ "modelid": "Level", "x": 256, "y": 0},
-		{ "modelid": "Level", "x": 512, "y": 0},
-		{ "modelid": "CaveEnd", "x": 768, "y": 0},
-		{ "modelid": "Box", "x": 280, "y": -55},
-		{ "modelid": "Box", "x": 280, "y": -23},
-		{ "modelid": "Box", "x": 280, "y": 9},
-		{ "modelid": "Box", "x": 280, "y": 41},
-		{ "modelid": "Box", "x": 240, "y": -55},
-		{ "modelid": "Box", "x": 240, "y": -23},
-		{ "modelid": "Box", "x": 240, "y": 9},
-		{ "modelid": "Box", "x": 240, "y": 41},
-		{ "modelid": "Box", "x": 200, "y": -55},
-		{ "modelid": "Box", "x": 200, "y": -23},
-		{ "modelid": "Box", "x": 200, "y": 9},
-		{ "modelid": "Box", "x": 200, "y": 41},
-		{ "modelid": "Box", "x": -300, "y": -23},
-		{ "modelid": "Box", "x": -300, "y": 0},
-		{ "modelid": "john", "x": 80, "y": -40},
-		{ "modelid": "zombie", "x": 400, "y": -40},
-		{ "modelid": "zombie", "x": 450, "y": -40},
-		{ "modelid": "zombie", "x": 500, "y": -40},
-		{ "modelid": "zombie", "x": 550, "y": -40},
-		{ "modelid": "blood", "x": 0, "y": 0}
+	"types": ["BoxEntity", "Bullet", "Cave", "Circle", "ImageEntity", "Player", "Stack", "Zombie"],
+	
+	"entities2": [
+		{"type": "Cave", "texture": "map.png", "x": 0, "y": 0, "modelid": "CaveEntrance"},
+		
+		{"type": "Stack", "texture": "box.png", "x": 600, "y": 0, "dynamic": true, "stacksize": 2},
+		{"type": "Stack", "texture": "box.png", "x": 700, "y": 0, "dynamic": true, "stacksize": 3},
+		{"type": "Stack", "texture": "box.png", "x": 800, "y": 0, "dynamic": true, "stacksize": 4},
+		{"type": "Stack", "texture": "box.png", "x": 900, "y": 0, "dynamic": true, "stacksize": 5},
+		{"type": "Stack", "texture": "box.png", "x": 1000, "y": 0, "dynamic": true, "stacksize": 5},
+		{"type": "Stack", "texture": "box.png", "x": 1100, "y": 0, "dynamic": true, "stacksize": 5},
+		{"type": "Stack", "texture": "box.png", "x": 1200, "y": 0, "dynamic": true, "stacksize": 5},
+		
+		{"type": "Player", "texture": "john.png", "x": 0, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		
+		{"type": "Zombie", "texture": "zombie.png", "x": -700, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -800, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -900, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1000, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1100, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
+		{"type": "Zombie", "texture": "zombie.png", "x": -1200, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true}
 	]
 }

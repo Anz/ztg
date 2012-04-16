@@ -1,4 +1,6 @@
 
+global = this;
+
 var Map = Class.create({
 	initialize: function() {
 		this.entities = [];
@@ -39,9 +41,9 @@ function loadMap(url) {
 			// load file
 			var file = JSON.parse(response.responseText);
 			
-			// load classes
-			file.classes.each(function(clazz) {
-				new Ajax.Request('ztg/src/' + clazz + '.js', {
+			// load javascript
+			file.types.each(function(type) {
+				new Ajax.Request('ztg/src/' + type + '.js', {
 					method:'get',
 					asynchronous: false,
 					onSuccess: function(response){	
@@ -51,35 +53,15 @@ function loadMap(url) {
 						elementHead.appendChild(script);
 					}
 				});
-				alert(window['Box']);
-			});
-			
-			// load textures
-			file.textures.each(function(texture) {
-				map.textures.set(texture.id, texture);
-			});
-			
-			// load models
-			file.models.each(function(model) {
-				model.texture = map.textures.get(model.textureid);
-				model.main = window[model.id + '_main'];
-				model.oncontact = window[model.id + '_oncontact'];
-				model.fixedRotation = typeof(model.fixedRotation) == 'undefined' ? false : model.fixedRotation;
-				model.dynamic = typeof(model.dynamic) == 'undefined' ? false : model.dynamic;
-				model.bullet = typeof(model.bullet) == 'undefind' ? false: model.bullet;
-				model.linearDamping = typeof(model.linearDamping) == 'undefined' ? 0 : model.linearDamping;
-				model.angularDamping = typeof(model.angularDamping) == 'undefined' ? 0 : model.angularDamping;
-				map.models.set(model.id, model);
 			});
 			
 			// load entities
-			file.entities.each(function(entity) {
-				entity.model = map.models.get(entity.modelid);
-				entity.color = {r:1,g:1,b:1,a:1};
-				entity.angle = typeof(entity.angle) == 'undefined' ? 0 : entity.angle;
+			file.entities2.each(function(entityDef) {
+				var entity = new this[entityDef.type](map, entityDef);
 				entity.framex = 0;
 				entity.framey = 0;
 				entity.flip = false;
+				
 				map.entities.push(entity);
 			});
 

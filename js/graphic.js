@@ -208,11 +208,10 @@ var Renderer = Class.create({
 		
 		if (texture) {
 			return texture;
-		}
-
-
+		}	
+		
 		var texture = gl.createTexture();
-		this.images.set(name, texture);
+		texture.name = name;
 		texture.image = new Image();
 		texture.image.onload = function() {
 			gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -225,6 +224,7 @@ var Renderer = Class.create({
 		}
 
 		texture.image.src = 'img/' + name;
+		this.images.set(name, texture);
 		
 		return texture;
 	},

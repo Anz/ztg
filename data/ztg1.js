@@ -1,7 +1,7 @@
 
 var f = 0;
 function john_main(map, camera, entity) {
-	entity.framex = Math.round(f);
+/*	entity.framex = Math.round(f);
 	if (entity.framey == 1) {
 		f += 0.15;
 		
@@ -27,7 +27,7 @@ function john_main(map, camera, entity) {
 		}
 	}
 	if (Input.keyDown.get('32') && entity.body.GetLinearVelocity().y < 5 && Math.abs(entity.body.GetLinearVelocity().y) < 0.1) {
-		entity.body.ApplyImpulse(new b2Vec2(0,30), entity.body.GetWorldCenter());
+		entity.body.ApplyImpulse(new b2Vec2(0,15), entity.body.GetWorldCenter());
 		entity.framex = 0;
 		entity.framey = 1;
 	}
@@ -63,7 +63,7 @@ function john_main(map, camera, entity) {
 	} else if (diffx < -100) {
 		camera.y += diffy + 100;
 	} 
-	//camera.y = meterInPixel(position.y)+30;
+	//camera.y = meterInPixel(position.y)+30;*/
 }
 
 function john_oncontact(map, camera, entity, other) {
@@ -73,25 +73,25 @@ function john_oncontact(map, camera, entity, other) {
 function Box_main(map, camera, entity) {
 	//entity.body.ApplyImpulse(new b2Vec2(0,2), entity.body.GetPosition());
 	
-	if (typeof(entity.health) == 'undefined') {
+	/*if (typeof(entity.health) == 'undefined') {
 		entity.health = 100;
 	}
 	
 	if (entity.health <= 0) {
 		map.world.DestroyBody(entity.body);
 		map.entities = map.entities.without(entity);
-	}
+	}*/
 }
 
 function bullet_main(map, camera, entity) {
-	if (typeof(entity.ttl) != 'undefined' && new Date().getTime() - entity.ttl > 100) {
+	/*if (typeof(entity.ttl) != 'undefined' && new Date().getTime() - entity.ttl > 100) {
 		map.world.DestroyBody(entity.body);
 		map.entities = map.entities.without(entity);
-	}
+	}*/
 }
 
 function bullet_oncontact(map, camera, entity, other) {
-	if (other.model.bullet || other.model.id == 'john') {
+	/*if (other.model.bullet || other.model.id == 'john') {
 		return;
 	}
 	if (typeof(entity.ttl) == 'undefined') {
@@ -101,13 +101,13 @@ function bullet_oncontact(map, camera, entity, other) {
 		if (typeof(other.health) != 'undefined') {
 			other.health -= 34;
 		}
-	}
+	}*/
 }
 
 
 var k = 0;
 function zombie_main(map, camera, entity) {
-	var john;
+	/*var john;
 	map.entities.each(function(entity) {
 		if (entity.modelid == 'john') {
 			john = entity;
@@ -161,9 +161,9 @@ function zombie_main(map, camera, entity) {
 
 	entity.framex = Math.round(k);
 	entity.body.ApplyImpulse(new b2Vec2(factor*2,0), entity.body.GetPosition());
-	k += 0.15;
+	k += 0.15;*/
 }
 
 function blood_main(map, camera, entity) {
-	entity = {"r":1,"g":1,"b":1,"a":0};
+	//entity = {"r":1,"g":1,"b":1,"a":0};
 }
