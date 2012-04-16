@@ -26,8 +26,8 @@
 		{"type": "Switch", "texture": "locker.png", "x": -770, "y": -20, "frames": 4, "animations":1},
 		{"type": "Switch", "texture": "locker.png", "x": -820, "y": -20, "frames": 4, "animations":1},
 		
-		{"type": "Stack", "texture": "box.png", "x": 1500, "y": 0, "dynamic": true, "stacksize": 100},
+		{"type": "Stack", "texture": "box.png", "x": 1500, "y": 0, "dynamic": true, "stacksize": 50},
 		
-		{"type": "Stack", "subtype": "Circle", "texture": "head.png", "x": -2000, "y": 0, "dynamic": true, "stacksize": 50}
+		{"type": "Stack", "subtype": "Circle", "texture": "head.png", "x": -2000, "y": 0, "dynamic": true, "stacksize": 30}
 	]
 }
