@@ -64,18 +64,40 @@ function createMeshFromBody (body) {
 		var indexStart = bodyMeshVertices.length/2;
 		if (shape.GetType() == 1) {
 			var vertices = shape.GetVertices();
-			bodyMeshVertices.push(meterInPixel(vertices[0].x));
-			bodyMeshVertices.push(meterInPixel(vertices[0].y));
-			bodyMeshVertices.push(meterInPixel(vertices[1].x));
-			bodyMeshVertices.push(meterInPixel(vertices[1].y));
-			for (var i=2; i<vertices.length; i++) {
-				var vertex = vertices[i];
-				bodyMeshVertices.push(meterInPixel(vertex.x));
-				bodyMeshVertices.push(meterInPixel(vertex.y));
+			if (shape.GetVertices().length == 2) {
+				bodyMeshVertices.push(meterInPixel(vertices[0].x));
+				bodyMeshVertices.push(meterInPixel(vertices[0].y));
+				bodyMeshVertices.push(meterInPixel(vertices[1].x));
+				bodyMeshVertices.push(meterInPixel(vertices[1].y));
+				bodyMeshVertices.push(meterInPixel(vertices[1].x));
+				bodyMeshVertices.push(meterInPixel(vertices[1].y)-5);
 				
+				bodyMeshVertices.push(meterInPixel(vertices[0].x));
+				bodyMeshVertices.push(meterInPixel(vertices[0].y));
+				bodyMeshVertices.push(meterInPixel(vertices[1].x));
+				bodyMeshVertices.push(meterInPixel(vertices[1].y)-5);
+				bodyMeshVertices.push(meterInPixel(vertices[0].x));
+				bodyMeshVertices.push(meterInPixel(vertices[0].y)-5);
 				bodyMeshIndices.push(indexStart);
-				bodyMeshIndices.push(indexStart+i-1);
-				bodyMeshIndices.push(indexStart+i);
+				bodyMeshIndices.push(indexStart+1);
+				bodyMeshIndices.push(indexStart+2);
+				bodyMeshIndices.push(indexStart+3);
+				bodyMeshIndices.push(indexStart+4);
+				bodyMeshIndices.push(indexStart+5);
+			} else {
+				bodyMeshVertices.push(meterInPixel(vertices[0].x));
+				bodyMeshVertices.push(meterInPixel(vertices[0].y));
+				bodyMeshVertices.push(meterInPixel(vertices[1].x));
+				bodyMeshVertices.push(meterInPixel(vertices[1].y));
+				for (var i=2; i<vertices.length; i++) {
+					var vertex = vertices[i];
+					bodyMeshVertices.push(meterInPixel(vertex.x));
+					bodyMeshVertices.push(meterInPixel(vertex.y));
+					
+					bodyMeshIndices.push(indexStart);
+					bodyMeshIndices.push(indexStart+i-1);
+					bodyMeshIndices.push(indexStart+i);
+				}
 			}
 		} else {
 			var position = shape.GetLocalPosition();

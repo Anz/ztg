@@ -20,10 +20,10 @@ var Stack = Class.create(Entity, {
 		fixtureDef.friction = this.getValue(attributes.friction, 0.3);
 		this.body.CreateFixture(fixtureDef);
 		
-		//attributes.type = attributes.subtype;
+		attributes.type = this.getValue(attributes.subtype, 'BoxEntity');
 		for (var i = 0; i < this.getValue(attributes.stacksize, 1) - 1; i++) {
 			attributes.y += this.texture.height;
-			var entity = new global['Circle'](this.map, attributes);
+			var entity = new global['BoxEntity'](this.map, attributes);
 			entity.angle = 0;
 			entity.framex = 0;
 			entity.framey = 0;
