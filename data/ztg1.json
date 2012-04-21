@@ -1,5 +1,5 @@
 {
-	"types": ["BoxEntity", "Bullet", "Cave", "Circle", "ImageEntity", "Player", "Stack", "Switch", "Zombie"],
+	"types": ["Animation", "Framed", "Bullet", "Cave", "Static", "Player", "Stack", "Switch", "Zombie"],
 	
 	"entities": [
 		{"type": "Cave", "texture": "map.png", "x": 0, "y": 0, "modelid": "CaveEntrance"},
@@ -28,6 +28,6 @@
 		
 		{"type": "Stack", "texture": "box.png", "x": 1500, "y": 0, "dynamic": true, "stacksize": 100},
 		
-		{"type": "Stack", "subtype": "Circle", "texture": "head.png", "x": -2000, "y": 0, "dynamic": true, "stacksize": 50}
+		{"type": "Stack", "subtype": "Framed", "shape": "circle", "texture": "head.png", "x": -2000, "y": 0, "dynamic": true, "stacksize": 50}
 	]
 }

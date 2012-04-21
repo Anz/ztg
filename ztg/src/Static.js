@@ -1,4 +1,4 @@
-var ImageEntity = Class.create(Entity, {
+var Static = Class.create(Entity, {
 	onCreate: function (attributes) {
 		this.layer = this.getValue(attributes.layer, 0.1);
 	}

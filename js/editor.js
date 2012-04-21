@@ -36,7 +36,7 @@ var EditorClass = Class.create({
 		
 		this.canvas = $('canvas');
 		
-		this.camera = {'x': 0, 'y': 0,'zoom': 1};
+		this.camera = {'x': 0, 'y': 0,'zoom': 2};
 
 		this.mouse = {"x":0,"y":0};
 		
@@ -62,7 +62,6 @@ var EditorClass = Class.create({
 		
 		this.gameLoop = true;
 		
-		//this.intervalId = setInterval(function() { obj.main(); }, 1000/30);
 		requestAnimationFrame (function() { obj.main(); });
 	},
 	main: function() {	
@@ -158,7 +157,8 @@ var EditorClass = Class.create({
 			
 				var position = entity.body.GetPosition();
 				var angle = entity.body.GetAngle();
-				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom);
+				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom, 0, 0, 1, 1);
+				//(mesh, color, texture, x, y, angle, width, height, framex, framey, framew, frameh)
 			});
 		}
 		

@@ -65,6 +65,15 @@ function texcb(texture) {
 	alert('callback');
 }
 
+var CATEGORY = {
+	MAP: 0x0001,
+	PLAYER: 0x0002,
+	ENEMY: 0x0004,
+	BULLET: 0x0008,
+	ITEM: 0x000F,
+	LIMB: 0x0010
+};
+
 var Entity = Class.create({
 	initialize: function(map, attributes) {
 		// attributes
@@ -94,19 +103,33 @@ var Entity = Class.create({
 		this.body = this.world.CreateBody(bodyDef);
 		this.body.SetUserData(this);
 		
+		// fixture definition
+		this.fixtureDef = new b2FixtureDef();
+		this.fixtureDef.restitution = this.getValue(attributes.restitution, 0);
+		this.fixtureDef.density = this.getValue(attributes.density, 1);
+		this.fixtureDef.friction = this.getValue(attributes.friction, 0.3);
+		this.fixtureDef.filter.categoryBits = this.getValue(attributes.category, 0x0001);
+		this.fixtureDef.filter.maskBits = this.getValue(attributes.mask, 0xFFFF);
+		this.fixtureDef.filter.groupIndex = this.getValue(attributes.group, 0);
+		
+		// born time
 		this.born = new Date().getTime();
 		
 		// call subclass		
 		this.onCreate(attributes);
+		
+		// add to map
+		this.map.entities.push(this);
 	},
 	onCreate: function(attributes) {
 	},
 	onPrestep: function(camera) {
 		if (typeof(this.ttl) != 'undefined') {
-			this.color.a = 1.0 - 1.0/this.ttl*(new Date().getTime() - this.born);
 			if (this.color.a <= 0) {
 				this.map.world.DestroyBody(this.body);
 				this.map.entities = this.map.entities.without(this);
+			} else{
+				this.color.a = 1.0 - 1.0/this.ttl*(new Date().getTime() - this.born);
 			}
 		}
 		this.onStep(camera);

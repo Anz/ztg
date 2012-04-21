@@ -8,6 +8,8 @@ var Player = Class.create(Entity, {
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
 		fixtureDef.density = this.getValue(attributes.density, 4);
 		fixtureDef.friction = this.getValue(attributes.friction, 15);
+		fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.PLAYER);
+		fixtureDef.filter.maskBits = this.getValue(attributes.mask, 0xFFFF);
 	
 		// box shape definition
 		var shapeDef = new b2PolygonShape();
@@ -31,7 +33,7 @@ var Player = Class.create(Entity, {
 		
 		this.lastShot = new Date().getTime(); 
 	},
-	onStep: function (camera) {
+	onStep: function (camera) {	
 		this.framex = Math.round(this.ani);
 		if (this.framey == 1) {
 			this.ani += 0.15;
@@ -104,18 +106,19 @@ var Player = Class.create(Entity, {
 			Input.keyDown.unset('70');
 		}
 		
-		var diffx =  meterInPixel(position.x) - camera.x;
-		if (diffx > 100) {
-			camera.x += diffx - 100;
-		} else if (diffx < -100) {
-			camera.x += diffx + 100;
-		} 
-		
-		var diffy =  meterInPixel(position.y) - camera.y;
-		if (diffy > 100) {
-			camera.y += diffy - 100;
-		} else if (diffx < -100) {
-			camera.y += diffy + 100;
+		var diffx = meterInPixel(position.x) - camera.x;
+		if (Math.abs(diffx) > 20) {
+			camera.x += diffx - 20 * diffx/Math.abs(diffx);
 		}
+		
+		var diffy = meterInPixel(position.y) - (camera.y);
+		/*if (diffy > 40) {
+			camera.y += diffy - 40;
+		} else*/ if (diffy < 0) {
+			camera.y = meterInPixel(position.y);
+		}
+		
+		//camera.x = meterInPixel(position.x);
+		camera.y = meterInPixel(position.y);
 	}
 });

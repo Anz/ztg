@@ -8,6 +8,8 @@ var Zombie = Class.create(Entity, {
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
 		fixtureDef.density = this.getValue(attributes.density, 4.2);
 		fixtureDef.friction = this.getValue(attributes.friction, 17);
+		fixtureDef.filter.categoryBits = CATEGORY.ENEMY;
+		fixtureDef.filter.maskBits = CATEGORY.MAP | CATEGORY.PLAYER | CATEGORY.BULLET | CATEGORY.LIMB;
 	
 		// box shape definition
 		var shapeDef = new b2PolygonShape();
@@ -32,6 +34,7 @@ var Zombie = Class.create(Entity, {
 		this.k = 0;
 	},
 	onStep: function (camera) {
+	
 		var john;
 		this.map.entities.each(function(entity) {
 			if (entity instanceof Player) {
@@ -48,35 +51,40 @@ var Zombie = Class.create(Entity, {
 			this.map.world.DestroyBody(this.body);
 			this.map.entities = this.map.entities.without(this);
 			
-			var head = new Circle(this.map, {
+			var head = new Framed(this.map, {
+				shape: 'circle',
 				texture: "zombie_head.png", 
 				x: meterInPixel(position.x), 
 				y: meterInPixel(position.y+0.7), 
-				dynamic: true
+				dynamic: true,
+				category: CATEGORY.LIMB,
+				mask: CATEGORY.MAP|CATEGORY.PLAYER|CATEGORY.ENEMY|CATEGORY.LIMB
 			});
 			head.ttl = 3000;
 			head.framex = 0;
 			head.framey = 0;
 			head.flip = false;
-			this.map.entities.push(head);
 			
-			var body = new BoxEntity(this.map, {
+			var body = new Framed(this.map, {
 				texture: "zombie_body.png", 
 				x: meterInPixel(position.x), 
 				y: meterInPixel(position.y), 
-				dynamic: true
+				dynamic: true,
+				category: CATEGORY.LIMB,
+				mask: CATEGORY.MAP|CATEGORY.PLAYER|CATEGORY.ENEMY|CATEGORY.LIMB
 			});
 			body.ttl = 3000;
 			body.framex = 0;
 			body.framey = 0;
 			body.flip = false;
-			this.map.entities.push(body);
 			
-			var leg = new BoxEntity(this.map, {
+			var leg = new Framed(this.map, {
 				texture: "zombie_leg.png", 
 				x: meterInPixel(position.x), 
 				y: meterInPixel(position.y-0.5), 
-				dynamic: true
+				dynamic: true,
+				category: CATEGORY.LIMB,
+				mask: CATEGORY.MAP|CATEGORY.PLAYER|CATEGORY.ENEMY|CATEGORY.LIMB
 			});
 			leg.ttl = 3000;
 			leg.framex = 0;

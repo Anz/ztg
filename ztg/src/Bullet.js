@@ -12,6 +12,8 @@ var Bullet = Class.create(Entity, {
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
 		fixtureDef.density = this.getValue(attributes.density, 0.001);
 		fixtureDef.friction = this.getValue(attributes.friction, 1);
+		fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.BULLET);
+		fixtureDef.filter.maskBits = this.getValue(attributes.mask, CATEGORY.MAP | CATEGORY.PLAYER | CATEGORY.ENEMY);
 		
 		// shape definition
 		var shapeDef = new b2PolygonShape();

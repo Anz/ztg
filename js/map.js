@@ -61,8 +61,6 @@ function loadMap(url) {
 				entity.framex = 0;
 				entity.framey = 0;
 				entity.flip = false;
-				
-				map.entities.push(entity);
 			});
 
 		},

@@ -214,13 +214,27 @@ var Renderer = Class.create({
 		texture.name = name;
 		texture.image = new Image();
 		texture.image.onload = function() {
+			texture.width = texture.image.width;
+			texture.height = texture.image.height;
+		
+			/*if (!isPowerOfTwo(image.width) || !isPowerOfTwo(image.height)) {
+				// Scale up the texture to the next highest power of two dimensions.
+				var canvas = document.createElement("canvas");
+				canvas.width = nextHighestPowerOfTwo(image.width);
+				canvas.height = nextHighestPowerOfTwo(image.height);
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(image, 0, 0, image.width, image.height);
+				image = canvas;
+			}
+			
+			texture.width = texture.image.efffectivwidth;
+			texture.height = texture.image.height;*/
+		
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			texture.width = texture.image.width;
-			texture.height = texture.image.height;
 		}
 
 		texture.image.src = 'img/' + name;
@@ -240,3 +254,15 @@ var Renderer = Class.create({
 		return texture;
 	}
 });
+
+/*function isPowerOfTwo(x) {
+    return (x & (x - 1)) == 0;
+}
+ 
+function nextHighestPowerOfTwo(x) {
+    --x;
+    for (var i = 1; i < 32; i <<= 1) {
+        x = x | x >> i;
+    }
+    return x + 1;
+}*/
