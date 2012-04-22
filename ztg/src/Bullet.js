@@ -47,6 +47,14 @@ var Bullet = Class.create(Entity, {
 			
 			if (typeof(entity.health) != 'undefined') {
 				entity.health -= 34;
+				var position = this.body.GetPosition();
+				var blood = new Animation(this.map, 
+		{"type": "Animation", "texture": "zombie_hit.png", "x": meterInPixel(position.x)-30, "y": meterInPixel(position.y), "frames": 4, "speed": 100, "repeat": 1});
+
+				blood.framex = 0;
+				blood.framey = 0;
+				blood.flip = false;
+				this.map.entities.push(blood);
 			}
 		}
 	}
