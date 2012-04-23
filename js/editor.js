@@ -121,20 +121,28 @@ var EditorClass = Class.create({
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
 			
-			var frames = 1.0/entity.frames;
-			var animations = 1.0/entity.animations;
+			var frameWidth = entity.texture.width/entity.frames;
+			var frameHeight = entity.texture.height/entity.animations;
 			
-			Render.drawImage(entity.texture.name, 
-				(meterInPixel(position.x)-camera.x)*camera.zoom, 
-				(meterInPixel(position.y)-camera.y)*camera.zoom, 
-				angle, 
-				camera.zoom, 
-				entity.color,
-				entity.framex, 
-				entity.framey, 
-				frames,
-				animations,
-				entity.flip);
+			Render.drawImage(
+				entity.texture, 
+				entity.color, 
+				meterInPixel(position.x)-camera.x, 
+				meterInPixel(position.y)-camera.y,
+				entity.framex*frameWidth, 
+				entity.framey*frameHeight,
+				frameWidth,
+				frameHeight,
+				angle,
+				camera.zoom);
+				
+			// draw collison box
+			if (Editor.showPhysicalBody) {
+				if (typeof(entity.body.mesh) == 'undefined') {
+					entity.body.mesh = createMeshFromBody(entity.body);
+				}
+				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, angle, 1, 1, 0, 0, camera.zoom);
+			}
 			
 			if (scriptActive) {
 				// step
@@ -146,21 +154,6 @@ var EditorClass = Class.create({
 				}
 			}
 		});
-		
-		// draw collison box
-		if (Editor.showPhysicalBody) {
-			var camera = this.camera;
-			this.map.entities.each(function(entity) {
-				if (typeof(entity.body.mesh) == 'undefined') {
-					entity.body.mesh = createMeshFromBody(entity.body);
-				}
-			
-				var position = entity.body.GetPosition();
-				var angle = entity.body.GetAngle();
-				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom, 0, 0, 1, 1);
-				//(mesh, color, texture, x, y, angle, width, height, framex, framey, framew, frameh)
-			});
-		}
 		
 		var mouse = this.mouse;
 		this.selection.each(function(selected) {

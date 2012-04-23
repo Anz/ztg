@@ -13,21 +13,21 @@ var Player = Class.create(Entity, {
 	
 		// box shape definition
 		var shapeDef = new b2PolygonShape();
-		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(-25)), 0);
+		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(5)), 0);
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
 		// circle top shape definition
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-50)));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(32)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
 		// circle bottom shape definition
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(0)));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
