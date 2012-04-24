@@ -46,7 +46,7 @@ var EditorClass = Class.create({
 		this.mode = this.Modes.EDIT;
 		
 		this.showPhysicalBody = false;
-		this.scriptActive = false;
+		this.scriptActive = true;
 		
 		this.time = new Date().getTime();
 	},
