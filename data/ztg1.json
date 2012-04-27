@@ -2,7 +2,21 @@
 	"types": ["Animation", "Framed", "Bullet", "Cave", "Static", "Player", "Stack", "Switch", "Zombie"],
 	
 	"entities": [
-		{"type": "Cave", "texture": "map.png", "x": 0, "y": 0, "modelid": "CaveEntrance"},
+		{"type": "Cave", "x":  -0, "y": 0 },
+	
+
+		{"type": "Static", "texture": "cave.png", "x": -1920, "y": 0, "frames": 3, "animations":4, "frame": 1, "animation": 2},
+		{"type": "Static", "texture": "cave.png", "x": -1600, "y": 0, "frames": 3, "animations":4, "frame": 1, "animation": 1},
+		{"type": "Static", "texture": "cave.png", "x": -1280, "y": 0, "frames": 3, "animations":4, "frame": 2, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":  -960, "y": 0, "frames": 3, "animations":4, "frame": 0, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":  -640, "y": 0, "frames": 3, "animations":4, "frame": 0, "animation": 1},
+		{"type": "Static", "texture": "cave.png", "x":  -320, "y": 0, "frames": 3, "animations":4, "frame": 1, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":     0, "y": 0, "frames": 3, "animations":4, "frame": 0, "animation": 2},
+		{"type": "Static", "texture": "cave.png", "x":   320, "y": 0, "frames": 3, "animations":4, "frame": 2, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":   640, "y": 0, "frames": 3, "animations":4, "frame": 1, "animation": 1},
+		{"type": "Static", "texture": "cave.png", "x":   960, "y": 0, "frames": 3, "animations":4, "frame": 2, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":  1280, "y": 0, "frames": 3, "animations":4, "frame": 0, "animation": 0},
+		{"type": "Static", "texture": "cave.png", "x":  1600, "y": 0, "frames": 3, "animations":4, "frame": 1, "animation": 3},
 		
 		{"type": "Stack", "texture": "box.png", "x": 500, "y": 0, "dynamic": true, "stacksize": 1},
 		{"type": "Stack", "texture": "box.png", "x": 600, "y": 0, "dynamic": true, "stacksize": 2},
