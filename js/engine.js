@@ -1,6 +1,7 @@
 var Game = Class.create({
 	initialize: function(map) {
 		this.map = map;
+		this.camera = {'x': 0, 'y': 0,'zoom': 2};
 	},
 	start: function() {		
 		Render.backgroundColor = {"r":0,"g":0,"b":0,"a":1};
@@ -9,54 +10,55 @@ var Game = Class.create({
 		this.intervalId = setInterval(function(){ game.main(); }, 1000/60);
 	},
 	main: function () {
-		if (Input.keyDown.get('27')) {
-			clearInterval(this.intervalId);
-			Editor.resume();
-			return;
-		}
+		// physic
+		this.game.physic();
 		
-		// physics
-		this.map.world.Step(1.0/30.0, 8, 3);
-
-		var camera = {'x': 0, 'y': 0, 'zoom': 2};
-		var map = this.map;
-		this.map.entities.each(function(entity) {
-			if (entity.model.name == 'hero') {
-				var position = entity.body.GetPosition();
-				if (Input.keyDown.get('65') && entity.body.GetLinearVelocity().x > -5) entity.body.ApplyImpulse(new b2Vec2(-5,0), entity.body.GetWorldCenter());
-				if (Input.keyDown.get('68') && entity.body.GetLinearVelocity().x < 5) entity.body.ApplyImpulse(new b2Vec2(5,0), entity.body.GetWorldCenter());
-				if (Input.keyDown.get('32') && entity.body.GetLinearVelocity().y < 5) {
-					entity.body.ApplyImpulse(new b2Vec2(0,20), entity.body.GetWorldCenter());
-					Input.keyDown.unset('32');
-				}
-				var now = new Date().getTime();
-				if (Input.keyDown.get('13') && (!entity.lastShot || now - entity.lastShot > 200)) {
-					entity.lastShot = now;
-					var bullet = new Entity(map.world, map.models.get('bullet'), position.x+pixelInMeter(50), position.y+pixelInMeter(5), 0.1);
-					bullet.body.ApplyImpulse(new b2Vec2(2,0), bullet.body.GetPosition());
-					map.entities.push(bullet);
-				}
-				camera.x = meterInPixel(position.x);
-				camera.y = meterInPixel(position.y)+30;
-			}
-		});
-	
 		// draw
-		Render.clear();
+		this.game.drawEntities();
 		
-		this.map.entities.sort(function (a, b) { return a.layer - b.layer; });
-		this.map.entities.each(function(entity) {
-			if (entity.body.IsBullet() && !entity.body.IsActive()) {
-				entity.destroy();
-				return;
-			}
+		// scripting
+		this.game.script();
+	},
+	drawEntities: function () {
+		var camera = this.camera;
 		
+		// sort entities
+		this.map.entities.sort(function (a, b){ return a.layer - b.layer; });
+	
+		this.map.entities.each(function(entity) {		
 			var position = entity.body.GetPosition();
 			var angle = entity.body.GetAngle();
-			if (!entity.width) entity.width = entity.model.texture.width;
-			if (!entity.height) entity.height = entity.model.texture.height;
-			if (!entity.width || !entity.height) return;
-			Render.drawRect((meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, entity.width*camera.zoom, entity.height*camera.zoom, entity.color, entity.model.texture);
+			
+			var frameWidth = entity.texture.width/entity.frames;
+			var frameHeight = entity.texture.height/entity.animations;
+			
+			Render.drawImage(
+				entity.texture, 
+				entity.color, 
+				meterInPixel(position.x)-camera.x, 
+				meterInPixel(position.y)-camera.y,
+				entity.framex*frameWidth, 
+				entity.framey*frameHeight,
+				frameWidth,
+				frameHeight,
+				angle,
+				camera.zoom);
+		});
+	},
+	physic: function() {
+		this.map.world.Step(1/30, 8, 3);
+	},
+	script: function() {
+		var camera = this.camera;
+	
+		this.map.entities.each(function(entity) {
+			// step
+			entity.onPrestep(camera);
+			
+			// contact
+			for (var contact = entity.body.GetContactList(); contact; contact = contact.next) {						
+				entity.onContact(contact.other.GetUserData());
+			}
 		});
 	}
 });

@@ -227,7 +227,7 @@ var Renderer = Class.create({
 			texture.height = texture.image.height;
 		
 			// resize texture if width/height is not already power of two
-			/*if (!isPowerOfTwo(texture.image.width) || !isPowerOfTwo(texture.image.height)) {
+			if (!isPowerOfTwo(texture.image.width) || !isPowerOfTwo(texture.image.height)) {
 				// Scale up the texture to the next highest power of two dimensions.
 				var canvas = document.createElement("canvas");
 				canvas.width = nextHighestPowerOfTwo(texture.image.width);
@@ -235,7 +235,7 @@ var Renderer = Class.create({
 				var ctx = canvas.getContext("2d");
 				ctx.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
 				texture.image = canvas;
-			}*/
+			}
 			
 			texture.absoluteWidth = texture.image.width;
 			texture.absoluteHeight = texture.image.height;
@@ -263,17 +263,6 @@ var Renderer = Class.create({
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
 		texture.width = width;
 		texture.height = height;
-		
-		// resize texture if width/height is not already power of two
-		/*if (!isPowerOfTwo(texture.image.width) || !isPowerOfTwo(texture.image.height)) {
-			// Scale up the texture to the next highest power of two dimensions.
-			var canvas = document.createElement("canvas");
-			canvas.width = nextHighestPowerOfTwo(texture.image.width);
-			canvas.height = nextHighestPowerOfTwo(texture.image.height);
-			var ctx = canvas.getContext("2d");
-			ctx.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
-			texture.image = canvas;
-		}*/
 		
 		texture.absoluteWidth = width;
 		texture.absoluteHeight = width;
