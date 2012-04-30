@@ -35,10 +35,10 @@
 		{"type": "Zombie", "texture": "zombie.png", "x": -1800, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
 		{"type": "Zombie", "texture": "zombie.png", "x": -1900, "y": 0, "frames": 8, "animations":4, "fixedRotation": true, "dynamic": true},
 		
-		{"type": "Switch", "texture": "locker.png", "x": -600, "y": -20, "frames": 4, "animations":1},
-		{"type": "Switch", "texture": "locker.png", "x": -650, "y": -20, "frames": 4, "animations":1},
-		{"type": "Switch", "texture": "locker.png", "x": -770, "y": -20, "frames": 4, "animations":1},
-		{"type": "Switch", "texture": "locker.png", "x": -820, "y": -20, "frames": 4, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -600, "y": -20, "frames": 3, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -650, "y": -20, "frames": 3, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -770, "y": -20, "frames": 3, "animations":1},
+		{"type": "Switch", "texture": "locker.png", "x": -820, "y": -20, "frames": 3, "animations":1},
 		
 		{"type": "Stack", "texture": "box.png", "x": 1500, "y": 0, "dynamic": true, "stacksize": 100},
 		

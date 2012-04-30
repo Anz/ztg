@@ -82,25 +82,11 @@ var Player = Class.create(Entity, {
 			this.map.entities.push(bullet);
 		}
 		if (Input.keyDown.get('70')) {
-			var choosen = null;
 			this.map.entities.each(function(entity) {
-				if (entity instanceof Player) {
-					return;
-				}
-			
-				if (!choosen) {
-					choosen = entity;
-					return;
-				}
-				var epos = entity.body.GetPosition();
-				
-				if (Math.abs(position.x - epos.x) <= 1 && entity.layer >= choosen.layer) {
-					choosen = entity;
+				if (entity instanceof Switch && entity.body.GetContactList() && entity.body.GetContactList().contact.IsTouching()) {
+					entity.onAction();
 				}
 			});
-			if (choosen) {
-				choosen.onAction();
-			}
 			Input.keyDown.unset('70');
 		}
 		

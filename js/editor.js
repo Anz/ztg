@@ -16,6 +16,7 @@ var EditorClass = Class.create({
 		
 		this.red = {"r":1,"g":0,"b":0,"a":0.3};
 		this.green = {"r":0,"g":1,"b":0,"a":0.3};
+		this.blue = {"r":0,"g":0.5,"b":1,"a":0.3};
 		this.yellow = {"r":1,"g":1,"b":0,"a":1};
 		this.lightgrey = {"r":0.6,"g":0.6,"b":0.6,"a":1};
 		this.grey = {"r":0.5,"g":0.5,"b":0.5,"a":1};
@@ -141,7 +142,9 @@ var EditorClass = Class.create({
 			if (typeof(entity.body.mesh) == 'undefined') {
 				entity.body.mesh = createMeshFromBody(entity.body);
 			}
-			Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, angle, 1, 1, 0, 0, camera.zoom);
+			
+			var color = (entity instanceof Switch) ? Editor.blue : (entity.body.IsAwake() ? Editor.green : Editor.red);
+			Render.draw(entity.body.mesh, color, Render.images.get('white'), meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, angle, 1, 1, 0, 0, camera.zoom, false, false);
 		});
 	},
 	startGame: function() {

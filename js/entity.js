@@ -3,8 +3,9 @@ var CATEGORY = {
 	PLAYER: 0x0002,
 	ENEMY: 0x0004,
 	BULLET: 0x0008,
-	ITEM: 0x000F,
-	LIMB: 0x0010
+	ITEM: 0x0010,
+	LIMB: 0x0020,
+	SWITCH: 0x0040
 };
 
 var Entity = Class.create({
