@@ -7,7 +7,6 @@ var Switch = Class.create(Entity, {
 			return;
 		}
 	
-		this.layer = this.getValue(attributes.layer, 0.1);
 		this.speed = this.getValue(attributes.speed, 100);
 		
 		var shapeDef = new b2PolygonShape();
