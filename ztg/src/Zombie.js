@@ -9,7 +9,7 @@ var Zombie = Class.create(Entity, {
 		fixtureDef.density = this.getValue(attributes.density, 4.2);
 		fixtureDef.friction = this.getValue(attributes.friction, 17);
 		fixtureDef.filter.categoryBits = CATEGORY.ENEMY;
-		fixtureDef.filter.maskBits = CATEGORY.MAP | CATEGORY.PLAYER | CATEGORY.BULLET | CATEGORY.LIMB;
+		fixtureDef.filter.maskBits = 0x00FF ^ CATEGORY.ENEMY;
 	
 		// box shape definition
 		var shapeDef = new b2PolygonShape();

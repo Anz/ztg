@@ -1,4 +1,4 @@
-var Switch = Class.create(Entity, {
+var Door = Class.create(Entity, {
 	onCreate: function (attributes) {
 		// hack to wait for image is loaded
 		if (typeof(this.texture.width) == 'undefined') {
@@ -13,7 +13,6 @@ var Switch = Class.create(Entity, {
 		shapeDef.SetAsOrientedBox(pixelInMeter(this.texture.width/this.frames)/2, pixelInMeter(this.texture.height/this.animations)/2, new b2Vec2(0, 0), 0);
 		shapeDef.radius = 0;
 		
-		this.fixtureDef.isSensor = true;
 		this.fixtureDef.shape = shapeDef;
 		this.fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.SWITCH);
 		this.fixtureDef.filter.maskBits = this.getValue(attributes.mask, CATEGORY.PLAYER);
@@ -26,6 +25,11 @@ var Switch = Class.create(Entity, {
 				this.framex = step;
 			} else {
 				this.framex = this.frames - 1;
+				for (var fixture = this.body.GetFixtureList(); fixture != null; fixture = fixture.GetNext())  {
+					var filter = fixture.GetFilterData();
+					filter.maskBits = 0x0000;
+					fixture.SetFilterData(filter);
+				}
 			}
 		} else if (typeof(this.closed) != 'undefined') {
 			var step = Math.round((new Date().getTime() - this.closed) / this.speed);
@@ -33,26 +37,21 @@ var Switch = Class.create(Entity, {
 				this.framex = this.frames - step - 1;
 			} else {
 				this.framex = 0;
+				for (var fixture = this.body.GetFixtureList(); fixture != null; fixture = fixture.GetNext())  {
+					var filter = fixture.GetFilterData();
+					filter.maskBits = 0xFFFF;
+					fixture.SetFilterData(filter);
+				}
 			}
 		}
 	},
-	onAction: function () {
+	onActivation: function () {
 		if (typeof(this.opened) == 'undefined') {
 			delete this.closed;
 			this.opened = new Date().getTime();
-			this.map.entities.each(function (entity) {
-				if (entity instanceof Door) {
-					entity.onActivation();
-				}
-			});
 		} else {
 			delete this.opened;
 			this.closed = new Date().getTime();
-			this.map.entities.each(function (entity) {
-				if (entity instanceof Door) {
-					entity.onActivation();
-				}
-			});
 		}
 	}
 });
