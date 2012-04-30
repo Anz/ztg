@@ -20,6 +20,8 @@ var Entity = Class.create({
 		this.animations = this.getValue(attributes.animations <= 0 ? 1 : attributes.animations, 1);
 		this.color = this.getValue(attributes.color, {r:1,g:1,b:1,a:1});
 		this.texture = Render.loadTexture(attributes.texture);
+		this.flipx = false;
+		this.flipy = false;
 		
 		// body defintion
 		var bodyDef = new b2BodyDef();

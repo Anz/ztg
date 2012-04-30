@@ -63,7 +63,7 @@ var Zombie = Class.create(Entity, {
 			head.ttl = 3000;
 			head.framex = 0;
 			head.framey = 0;
-			head.flip = false;
+			head.flipx = false;
 			
 			var body = new Framed(this.map, {
 				texture: "zombie_body.png", 
@@ -76,7 +76,7 @@ var Zombie = Class.create(Entity, {
 			body.ttl = 3000;
 			body.framex = 0;
 			body.framey = 0;
-			body.flip = false;
+			body.flipx = false;
 			
 			var leg = new Framed(this.map, {
 				texture: "zombie_leg.png", 
@@ -89,12 +89,12 @@ var Zombie = Class.create(Entity, {
 			leg.ttl = 3000;
 			leg.framex = 0;
 			leg.framey = 0;
-			leg.flip = false;
+			leg.flipx = false;
 			this.map.entities.push(leg);
 		}
 		
 		var factor = this.body.GetPosition().x < john.body.GetPosition().x ? 1 : -1;
-		this.flip = factor == -1 ? true : false;
+		this.flipx = factor == -1 ? true : false;
 
 
 		this.framex = Math.round(this.k);

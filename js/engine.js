@@ -42,7 +42,9 @@ var Game = Class.create({
 				frameWidth,
 				frameHeight,
 				angle,
-				camera.zoom);
+				camera.zoom,
+				entity.flipx,
+				entity.flipy);
 		});
 	},
 	physic: function() {
