@@ -47,14 +47,14 @@ var Player = Class.create(Entity, {
 		var position = this.body.GetPosition();
 		if (Input.keyDown.get('65') && this.body.GetLinearVelocity().x > -5) {
 			this.body.ApplyImpulse(new b2Vec2(-5,0), this.body.GetWorldCenter());
-			this.flip = true;
+			this.flipx = true;
 			if (this.framey == 0) {
 				this.ani += 2;
 			}
 		}
 		if (Input.keyDown.get('68') && this.body.GetLinearVelocity().x < 5) {
 			this.body.ApplyImpulse(new b2Vec2(5,0), this.body.GetWorldCenter());
-			this.flip = false;
+			this.flipx = false;
 			if (this.framey == 0) {
 				this.ani += 2;
 			}
@@ -69,40 +69,24 @@ var Player = Class.create(Entity, {
 			this.lastShot = now;
 			var bullet = new Bullet(this.map, {
 				texture: "bullet.png", 
-				x: meterInPixel(position.x+pixelInMeter(40)*(this.flip?-1:1)), 
-				y: meterInPixel(position.y+pixelInMeter(-20)), 
+				x: meterInPixel(position.x+pixelInMeter(40)*(this.flipx?-1:1)), 
+				y: meterInPixel(position.y+pixelInMeter(10)), 
 				dynamic: true,
-				impulse: {x: 0.0006*(this.flip?-1:1), y: 0},
+				impulse: {x: 0.0006*(this.flipx?-1:1), y: 0},
 				force: {x: 0, y: 0.00081}
 			});
 			bullet.framex = 0;
 			bullet.framey = 0;
-			bullet.flip = false;
-			
-			//bullet.body.ApplyImpulse(new b2Vec2(0.0005*(this.flip?-1:1),0), bullet.body.GetPosition());
-			//bullet.body.ApplyForce(new b2Vec2(0,0.00081), bullet.body.GetPosition());
+			bullet.flipx = false;
+
 			this.map.entities.push(bullet);
 		}
 		if (Input.keyDown.get('70')) {
-			var choosen = null;
 			this.map.entities.each(function(entity) {
-				if (entity instanceof Player) {
-					return;
-				}
-			
-				if (!choosen) {
-					choosen = entity;
-					return;
-				}
-				var epos = entity.body.GetPosition();
-				
-				if (Math.abs(position.x - epos.x) <= 1 && entity.layer >= choosen.layer) {
-					choosen = entity;
+				if (entity instanceof Switch && entity.body.GetContactList() && entity.body.GetContactList().contact.IsTouching()) {
+					entity.onAction();
 				}
 			});
-			if (choosen) {
-				choosen.onAction();
-			}
 			Input.keyDown.unset('70');
 		}
 		

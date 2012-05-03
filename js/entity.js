@@ -3,8 +3,9 @@ var CATEGORY = {
 	PLAYER: 0x0002,
 	ENEMY: 0x0004,
 	BULLET: 0x0008,
-	ITEM: 0x000F,
-	LIMB: 0x0010
+	ITEM: 0x0010,
+	LIMB: 0x0020,
+	SWITCH: 0x0040
 };
 
 var Entity = Class.create({
@@ -14,12 +15,14 @@ var Entity = Class.create({
 		this.world = map.world;
 		this.layer = this.getValue(attributes.layer, 0.5);
 		this.angle = this.getValue(attributes.angle, 0);
-		this.frame = 0;
-		this.animation = 0;
+		this.framex = this.getValue(attributes.frame, 0);
+		this.framey = this.getValue(attributes.animation, 0);
 		this.frames = this.getValue(attributes.frames <= 0 ? 1 : attributes.frames, 1);
 		this.animations = this.getValue(attributes.animations <= 0 ? 1 : attributes.animations, 1);
 		this.color = this.getValue(attributes.color, {r:1,g:1,b:1,a:1});
 		this.texture = Render.loadTexture(attributes.texture);
+		this.flipx = false;
+		this.flipy = false;
 		
 		// body defintion
 		var bodyDef = new b2BodyDef();
