@@ -8,30 +8,34 @@ var Player = Class.create(Entity, {
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
 		fixtureDef.density = this.getValue(attributes.density, 4);
 		fixtureDef.friction = this.getValue(attributes.friction, 15);
+		fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.PLAYER);
+		fixtureDef.filter.maskBits = this.getValue(attributes.mask, 0xFFFF);
+	
+		// circle bottom shape definition
+		var shapeDef = new b2PolygonShape();
+		shapeDef = new b2CircleShape(pixelInMeter(6));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
+		fixtureDef.shape = shapeDef;
+		this.body.CreateFixture(fixtureDef);
 	
 		// box shape definition
+		fixtureDef.friction = 0;
 		var shapeDef = new b2PolygonShape();
-		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(-25)), 0);
+		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(5)), 0);
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
 		// circle top shape definition
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-50)));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(32)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
-		// circle bottom shape definition
-		var shapeDef = new b2PolygonShape();
-		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(0)));
-		fixtureDef.shape = shapeDef;
-		this.body.CreateFixture(fixtureDef);
 		
 		this.lastShot = new Date().getTime(); 
 	},
-	onStep: function (camera) {
+	onStep: function (camera) {	
 		this.framex = Math.round(this.ani);
 		if (this.framey == 1) {
 			this.ani += 0.15;
@@ -45,14 +49,14 @@ var Player = Class.create(Entity, {
 		var position = this.body.GetPosition();
 		if (Input.keyDown.get('65') && this.body.GetLinearVelocity().x > -5) {
 			this.body.ApplyImpulse(new b2Vec2(-5,0), this.body.GetWorldCenter());
-			this.flip = true;
+			this.flipx = true;
 			if (this.framey == 0) {
 				this.ani += 2;
 			}
 		}
 		if (Input.keyDown.get('68') && this.body.GetLinearVelocity().x < 5) {
 			this.body.ApplyImpulse(new b2Vec2(5,0), this.body.GetWorldCenter());
-			this.flip = false;
+			this.flipx = false;
 			if (this.framey == 0) {
 				this.ani += 2;
 			}
@@ -67,55 +71,40 @@ var Player = Class.create(Entity, {
 			this.lastShot = now;
 			var bullet = new Bullet(this.map, {
 				texture: "bullet.png", 
-				x: meterInPixel(position.x+pixelInMeter(40)*(this.flip?-1:1)), 
-				y: meterInPixel(position.y+pixelInMeter(-20)), 
+				x: meterInPixel(position.x+pixelInMeter(40)*(this.flipx?-1:1)), 
+				y: meterInPixel(position.y+pixelInMeter(10)), 
 				dynamic: true,
-				impulse: {x: 0.0006*(this.flip?-1:1), y: 0},
+				impulse: {x: 0.0006*(this.flipx?-1:1), y: 0},
 				force: {x: 0, y: 0.00081}
 			});
 			bullet.framex = 0;
 			bullet.framey = 0;
-			bullet.flip = false;
-			
-			//bullet.body.ApplyImpulse(new b2Vec2(0.0005*(this.flip?-1:1),0), bullet.body.GetPosition());
-			//bullet.body.ApplyForce(new b2Vec2(0,0.00081), bullet.body.GetPosition());
+			bullet.flipx = false;
+
 			this.map.entities.push(bullet);
 		}
 		if (Input.keyDown.get('70')) {
-			var choosen = null;
 			this.map.entities.each(function(entity) {
-				if (entity instanceof Player) {
-					return;
-				}
-			
-				if (!choosen) {
-					choosen = entity;
-					return;
-				}
-				var epos = entity.body.GetPosition();
-				
-				if (Math.abs(position.x - epos.x) <= 1 && entity.layer >= choosen.layer) {
-					choosen = entity;
+				if (entity instanceof Switch && entity.body.GetContactList() && entity.body.GetContactList().contact.IsTouching()) {
+					entity.onAction();
 				}
 			});
-			if (choosen) {
-				choosen.onAction();
-			}
 			Input.keyDown.unset('70');
 		}
 		
-		var diffx =  meterInPixel(position.x) - camera.x;
-		if (diffx > 100) {
-			camera.x += diffx - 100;
-		} else if (diffx < -100) {
-			camera.x += diffx + 100;
-		} 
-		
-		var diffy =  meterInPixel(position.y) - camera.y;
-		if (diffy > 100) {
-			camera.y += diffy - 100;
-		} else if (diffx < -100) {
-			camera.y += diffy + 100;
+		var diffx = meterInPixel(position.x) - camera.x;
+		if (Math.abs(diffx) > 20) {
+			camera.x += diffx - 20 * diffx/Math.abs(diffx);
 		}
+		
+		var diffy = meterInPixel(position.y) - (camera.y);
+		/*if (diffy > 40) {
+			camera.y += diffy - 40;
+		} else*/ if (diffy < 0) {
+			camera.y = meterInPixel(position.y);
+		}
+		
+		//camera.x = meterInPixel(position.x);
+		camera.y = meterInPixel(position.y);
 	}
 });

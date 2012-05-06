@@ -12,6 +12,8 @@ var Bullet = Class.create(Entity, {
 		fixtureDef.restitution = this.getValue(attributes.restitution, 0);
 		fixtureDef.density = this.getValue(attributes.density, 0.001);
 		fixtureDef.friction = this.getValue(attributes.friction, 1);
+		fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.BULLET);
+		fixtureDef.filter.maskBits = this.getValue(attributes.mask, CATEGORY.MAP | CATEGORY.PLAYER | CATEGORY.ENEMY);
 		
 		// shape definition
 		var shapeDef = new b2PolygonShape();
@@ -45,6 +47,14 @@ var Bullet = Class.create(Entity, {
 			
 			if (typeof(entity.health) != 'undefined') {
 				entity.health -= 34;
+				var position = this.body.GetPosition();
+				var blood = new Animation(this.map, 
+		{"type": "Animation", "texture": "zombie_hit.png", "x": meterInPixel(position.x)-30, "y": meterInPixel(position.y), "frames": 4, "speed": 100, "repeat": 1});
+
+				blood.framex = 0;
+				blood.framey = 0;
+				blood.flip = false;
+				this.map.entities.push(blood);
 			}
 		}
 	}

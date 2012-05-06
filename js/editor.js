@@ -11,10 +11,12 @@ var requestAnimationFrame = typeof(mozRequestAnimationFrame) != 'undefined' ? mo
 
 var EditorClass = Class.create({
 	initialize: function() {
-		this.map = loadMap('data/ztg1');	
+		this.map = loadMap('data/ztg1');
+		this.game = new Game(this.map);
 		
 		this.red = {"r":1,"g":0,"b":0,"a":0.3};
 		this.green = {"r":0,"g":1,"b":0,"a":0.3};
+		this.blue = {"r":0,"g":0.5,"b":1,"a":0.3};
 		this.yellow = {"r":1,"g":1,"b":0,"a":1};
 		this.lightgrey = {"r":0.6,"g":0.6,"b":0.6,"a":1};
 		this.grey = {"r":0.5,"g":0.5,"b":0.5,"a":1};
@@ -36,7 +38,7 @@ var EditorClass = Class.create({
 		
 		this.canvas = $('canvas');
 		
-		this.camera = {'x': 0, 'y': 0,'zoom': 1};
+		this.camera = {'x': 0, 'y': 0,'zoom': 2};
 
 		this.mouse = {"x":0,"y":0};
 		
@@ -62,20 +64,12 @@ var EditorClass = Class.create({
 		
 		this.gameLoop = true;
 		
-		//this.intervalId = setInterval(function() { obj.main(); }, 1000/30);
 		requestAnimationFrame (function() { obj.main(); });
 	},
 	main: function() {	
 		var obj = this;
 		requestAnimationFrame (function() { obj.main(); });
 		
-		var current = new Date().getTime();
-		if (current - this.time < 1000/60) {
-			return;
-		}
-	
-		// calculate physics
-		this.map.world.Step(1/30, 8, 3);
 			
 		// drop selection
 		if (Input.readRightClick()) {
@@ -84,14 +78,14 @@ var EditorClass = Class.create({
 
 		// camera moving
 		if (!this.scriptActive) {
-			if (Input.keyDown.get('87')) this.camera.y += 20 / this.camera.zoom;
-			if (Input.keyDown.get('65')) this.camera.x -= 20 / this.camera.zoom;
-			if (Input.keyDown.get('83')) this.camera.y -= 20 / this.camera.zoom;
-			if (Input.keyDown.get('68')) this.camera.x += 20 / this.camera.zoom;
+			if (Input.keyDown.get('87')) this.game.camera.y += 20 / this.game.camera.zoom;
+			if (Input.keyDown.get('65')) this.game.camera.x -= 20 / this.game.camera.zoom;
+			if (Input.keyDown.get('83')) this.game.camera.y -= 20 / this.game.camera.zoom;
+			if (Input.keyDown.get('68')) this.game.camera.x += 20 / this.game.camera.zoom;
 		}
 		
 		// camera zoom
-		this.camera.zoom = Math.min(10, Math.max(0.05, this.camera.zoom-Input.readMouseWheel()*this.camera.zoom));
+		this.game.camera.zoom = Math.min(10, Math.max(0.05, this.game.camera.zoom-Input.readMouseWheel()*this.game.camera.zoom));
 		
 		// clear screen
 		Render.clear();
@@ -112,54 +106,24 @@ var EditorClass = Class.create({
 		Render.drawLine(-this.canvas.width/2, -this.camera.y*this.camera.zoom, this.canvas.width/2, -this.camera.y*this.camera.zoom, this.yellow);
 		
 		// draw entities
-		this.map.entities.sort(function (a, b){ return a.layer - b.layer; });
 		var map = this.map;
 		var camera = this.camera;
 		var world = this.map.world;
 		var scriptActive = this.scriptActive;
 		
-		this.map.entities.each(function(entity) {		
-			var position = entity.body.GetPosition();
-			var angle = entity.body.GetAngle();
-			
-			var frames = 1.0/entity.frames;
-			var animations = 1.0/entity.animations;
-			
-			Render.drawImage(entity.texture.name, 
-				(meterInPixel(position.x)-camera.x)*camera.zoom, 
-				(meterInPixel(position.y)-camera.y)*camera.zoom, 
-				angle, 
-				camera.zoom, 
-				entity.color,
-				entity.framex, 
-				entity.framey, 
-				frames,
-				animations,
-				entity.flip);
-			
-			if (scriptActive) {
-				// step
-				entity.onPrestep(camera);
-				
-				// contact
-				for (var contact = entity.body.GetContactList(); contact; contact = contact.next) {						
-					entity.onContact(contact.other.GetUserData());
-				}
-			}
-		});
+		// physic
+		this.game.physic();
 		
-		// draw collison box
+		this.game.drawEntities();
+		
+		// draw bounding box
 		if (Editor.showPhysicalBody) {
-			var camera = this.camera;
-			this.map.entities.each(function(entity) {
-				if (typeof(entity.body.mesh) == 'undefined') {
-					entity.body.mesh = createMeshFromBody(entity.body);
-				}
-			
-				var position = entity.body.GetPosition();
-				var angle = entity.body.GetAngle();
-				Render.draw(entity.body.mesh, entity.body.IsAwake() ? Editor.green : Editor.red, Render.images.get('white'), (meterInPixel(position.x)-camera.x)*camera.zoom, (meterInPixel(position.y)-camera.y)*camera.zoom, angle, camera.zoom, camera.zoom);
-			});
+			this.drawBoundingBox();
+		}
+		
+		// scripting
+		if (scriptActive) {
+			this.game.script();
 		}
 		
 		var mouse = this.mouse;
@@ -167,8 +131,30 @@ var EditorClass = Class.create({
 			Render.drawRect(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":1,"a":1}, selected.model.texture);
 			Render.drawFrame(mouse.x-selected.x, mouse.y-selected.y, 0, selected.model.texture.width*camera.zoom, selected.model.texture.height*camera.zoom, {"r":1,"g":1,"b":0,"a":1});
 		});
-		
-		this.time = current;
+	},
+	drawBoundingBox: function() {
+		var camera = this.game.camera;
+	
+		this.game.map.entities.each(function(entity) {		
+			var position = entity.body.GetPosition();
+			var angle = entity.body.GetAngle();
+					
+			if (typeof(entity.body.mesh) == 'undefined') {
+				entity.body.mesh = createMeshFromBody(entity.body);
+			}
+			
+			var color = (entity instanceof Switch) ? Editor.blue : (entity.body.IsAwake() ? Editor.green : Editor.red);
+			for (var fixture = entity.body.GetFixtureList(); fixture != null; fixture = fixture.GetNext())  {
+				if (fixture.GetFilterData().maskBits == 0) {
+					color = {"r": color.r, "g": color.g, "b": color.b, "a": 0.05};
+				}
+			}
+			if (entity.body.GetContactList() != null) {
+				color = {"r": color.r*2, "g": color.g*2, "b": color.b*2, "a": color.a};
+			}
+
+			Render.draw(entity.body.mesh, color, Render.images.get('white'), meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, angle, 1, 1, 0, 0, camera.zoom, false, false);
+		});
 	},
 	startGame: function() {
 		clearInterval(this.id);			

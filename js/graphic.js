@@ -23,6 +23,7 @@ var Renderer = Class.create({
 		// setup textures
 		this.images.set('white', this.createTexture([255,255,255,255],1,1));
 		
+		
 		var pixelHatchSize = 128;
 		var pixelHatch = new Array(pixelHatchSize*pixelHatchSize*4);
 		for (var i=0; i<pixelHatchSize*pixelHatchSize; i++) {
@@ -45,6 +46,12 @@ var Renderer = Class.create({
 		this.frameMesh = this.createMesh(this.gl.LINES, [-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5], null, [0, 1, 1, 3, 3, 2, 2, 0]);
 		this.rectMesh = this.createMesh(this.gl.TRIANGLES, [-0.5,  0.5, 0.5, 0.5, -0.5, -0.5, 0.5, -0.5], [0.0, 1.0, 1.0, 1.0, 0.0, 0.0, 1.0, 0.0], [0, 1, 2, 2, 1, 3]);
 		this.pointMesh = this.createMesh(this.gl.POINTS, [0, 0], null, [0]);
+		
+		this.imageMesh = this.createMesh(
+			this.gl.TRIANGLES,
+			[-0.5,  0.5, 0.5,  0.5, -0.5, -0.5, 0.5, -0.5],
+			[0.0, 0.0, 1.0, 0.0, 0.0, -1.0, 1.0, -1.0],
+			 [0, 1, 2, 2, 1, 3]);
 	},
 	clear: function (color) {
 		this.gl.clearColor(this.backgroundColor.r, this.backgroundColor.g, this.backgroundColor.b, this.backgroundColor.a);
@@ -54,7 +61,7 @@ var Renderer = Class.create({
 		this.draw(this.pointMesh, color, null, x, y, 0, 0, 0, 0, 0, 1, 1);
 	},
 	drawLine: function (sx, sy, tx, ty, color) {
-		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy), 0, 0, 1, 1);
+		this.draw(this.lineMesh, color, null, (sx+tx)/2, (sy+ty)/2, 0, (tx-sx), (ty-sy), 0, 0, 1);
 	},
 	drawFrame: function (x, y, angle, width, height, color) {
 		this.draw(this.frameMesh, color, null, x, y, angle, width, height, 0, 0, 1, 1);
@@ -62,21 +69,23 @@ var Renderer = Class.create({
 	drawRect: function (x, y, angle, width, height, color, texture) {
 		this.draw(this.rectMesh, color, texture, x, y, angle, width, height, 0, 0, 1, 1);
 	},
-	drawImage: function (image, x, y, angle, size, color, framex, framey, framew, frameh, flip) {
-		var texture = this.loadTexture(image);
-		this.draw(this.rectMesh, color, texture, x, y, angle, texture.width*size*framew*(flip?-1:1), texture.height*Math.abs(size)*frameh, framex, framey, framew, frameh);
+	drawImage: function (texture, color, x, y, offsetX, offsetY, width, height, angle, zoom, flipx, flipy) {
+		this.draw(this.imageMesh, color, texture, x, y, angle, width, height, offsetX, offsetY, zoom, flipx, flipy);
 	},
-	draw: function (mesh, color, texture, x, y, angle, width, height, framex, framey, framew, frameh) {	
+	draw: function (mesh, color, texture, x, y, angle, width, height, offsetX, offsetY, zoom, flipx, flipy) {
+		if (texture == null) texture = this.loadTexture('white');
+	
 		// settings
 		this.gl.enable(this.gl.BLEND);
 		this.gl.blendFunc(this.gl.SRC_ALPHA, this.gl.ONE_MINUS_SRC_ALPHA);
 		
 		// set uniforms
 		this.gl.uniform2f(this.program.camera, this.canvas.width, this.canvas.height);
-		this.gl.uniform2f(this.program.position, x, y);
+		this.gl.uniform2f(this.program.position, x*zoom, y*zoom);
 		this.gl.uniform1f(this.program.rotation, -angle);
-		this.gl.uniform2f(this.program.size, width, height);
-		this.gl.uniform4f(this.program.frame, framex, frameh-framey-1, framew, frameh);
+		
+		this.gl.uniform2f(this.program.size, width*zoom*(flipx?-1:1), height*zoom*(flipy?-1:1));
+		this.gl.uniform4f(this.program.frame, offsetX*texture.pixelWidth, -offsetY*texture.pixelHeight, width*texture.pixelWidth, height*texture.pixelHeight);
 		
 		this.gl.uniform4f(this.program.color, color.r, color.g, color.b, color.a);
 		
@@ -214,13 +223,30 @@ var Renderer = Class.create({
 		texture.name = name;
 		texture.image = new Image();
 		texture.image.onload = function() {
+			texture.width = texture.image.width;
+			texture.height = texture.image.height;
+		
+			// resize texture if width/height is not already power of two
+			if (!isPowerOfTwo(texture.image.width) || !isPowerOfTwo(texture.image.height)) {
+				// Scale up the texture to the next highest power of two dimensions.
+				var canvas = document.createElement("canvas");
+				canvas.width = nextHighestPowerOfTwo(texture.image.width);
+				canvas.height = nextHighestPowerOfTwo(texture.image.height);
+				var ctx = canvas.getContext("2d");
+				ctx.drawImage(texture.image, 0, 0, texture.image.width, texture.image.height);
+				texture.image = canvas;
+			}
+			
+			texture.absoluteWidth = texture.image.width;
+			texture.absoluteHeight = texture.image.height;
+			texture.pixelWidth = texture.absoluteWidth == 0 ? 1 : 1.0 / texture.absoluteWidth;
+			texture.pixelHeight = texture.absoluteHeight == 0 ? 1 : 1.0 / texture.absoluteHeight;
+		
 			gl.bindTexture(gl.TEXTURE_2D, texture);
 			gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, texture.image);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			texture.width = texture.image.width;
-			texture.height = texture.image.height;
 		}
 
 		texture.image.src = 'img/' + name;
@@ -237,6 +263,24 @@ var Renderer = Class.create({
 		this.gl.texParameteri(this.gl.TEXTURE_2D, this.gl.TEXTURE_MIN_FILTER, this.gl.NEAREST);
 		texture.width = width;
 		texture.height = height;
+		
+		texture.absoluteWidth = width;
+		texture.absoluteHeight = width;
+		texture.pixelWidth = texture.absoluteWidth == 0 ? 1 : 1.0 / texture.absoluteWidth;
+		texture.pixelHeight = texture.absoluteHeight == 0 ? 1 : 1.0 / texture.absoluteHeight;
+		
 		return texture;
 	}
 });
+
+function isPowerOfTwo(x) {
+    return (x & (x - 1)) == 0;
+}
+ 
+function nextHighestPowerOfTwo(x) {
+    --x;
+    for (var i = 1; i < 32; i <<= 1) {
+        x = x | x >> i;
+    }
+    return x + 1;
+}

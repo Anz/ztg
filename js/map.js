@@ -58,11 +58,9 @@ function loadMap(url) {
 			// load entities
 			file.entities.each(function(entityDef) {
 				var entity = new this[entityDef.type](map, entityDef);
-				entity.framex = 0;
-				entity.framey = 0;
+				//entity.framex = 0;
+				//entity.framey = 0;
 				entity.flip = false;
-				
-				map.entities.push(entity);
 			});
 
 		},

@@ -39,7 +39,7 @@ void main() {
 			0.0,           0.0, 0.0, 1.0 );
 
 		gl_Position = projectionMatrix * positionMatrix * rotationMatrix * vec4(vertexPosition, 0.0, 1.0);
-		vTextureCoord = (textureCoord+vec2(uTextureCoord.x, uTextureCoord.y))*vec2(uTextureCoord.z, uTextureCoord.w);
+		vTextureCoord = textureCoord*vec2(uTextureCoord.z, uTextureCoord.w)+vec2(uTextureCoord.x, uTextureCoord.y);
 		vColor = uColor;
 		gl_PointSize = 3.0;
 }
