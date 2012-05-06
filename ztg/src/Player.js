@@ -11,7 +11,15 @@ var Player = Class.create(Entity, {
 		fixtureDef.filter.categoryBits = this.getValue(attributes.category, CATEGORY.PLAYER);
 		fixtureDef.filter.maskBits = this.getValue(attributes.mask, 0xFFFF);
 	
+		// circle bottom shape definition
+		var shapeDef = new b2PolygonShape();
+		shapeDef = new b2CircleShape(pixelInMeter(6));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
+		fixtureDef.shape = shapeDef;
+		this.body.CreateFixture(fixtureDef);
+	
 		// box shape definition
+		fixtureDef.friction = 0;
 		var shapeDef = new b2PolygonShape();
 		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(5)), 0);
 		fixtureDef.shape = shapeDef;
@@ -24,12 +32,6 @@ var Player = Class.create(Entity, {
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
-		// circle bottom shape definition
-		var shapeDef = new b2PolygonShape();
-		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
-		fixtureDef.shape = shapeDef;
-		this.body.CreateFixture(fixtureDef);
 		
 		this.lastShot = new Date().getTime(); 
 	},

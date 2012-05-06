@@ -144,6 +144,15 @@ var EditorClass = Class.create({
 			}
 			
 			var color = (entity instanceof Switch) ? Editor.blue : (entity.body.IsAwake() ? Editor.green : Editor.red);
+			for (var fixture = entity.body.GetFixtureList(); fixture != null; fixture = fixture.GetNext())  {
+				if (fixture.GetFilterData().maskBits == 0) {
+					color = {"r": color.r, "g": color.g, "b": color.b, "a": 0.05};
+				}
+			}
+			if (entity.body.GetContactList() != null) {
+				color = {"r": color.r*2, "g": color.g*2, "b": color.b*2, "a": color.a};
+			}
+
 			Render.draw(entity.body.mesh, color, Render.images.get('white'), meterInPixel(position.x)-camera.x, meterInPixel(position.y)-camera.y, angle, 1, 1, 0, 0, camera.zoom, false, false);
 		});
 	},

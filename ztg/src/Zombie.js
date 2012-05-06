@@ -10,8 +10,16 @@ var Zombie = Class.create(Entity, {
 		fixtureDef.friction = this.getValue(attributes.friction, 17);
 		fixtureDef.filter.categoryBits = CATEGORY.ENEMY;
 		fixtureDef.filter.maskBits = 0x00FF ^ CATEGORY.ENEMY;
+		
+		// circle bottom shape definition
+		var shapeDef = new b2PolygonShape();
+		shapeDef = new b2CircleShape(pixelInMeter(6));
+		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
+		fixtureDef.shape = shapeDef;
+		this.body.CreateFixture(fixtureDef);
 	
 		// box shape definition
+		fixtureDef.friction = 0;
 		var shapeDef = new b2PolygonShape();
 		shapeDef.SetAsOrientedBox(pixelInMeter(12)/2, pixelInMeter(52)/2, new b2Vec2(0, pixelInMeter(5)), 0);
 		fixtureDef.shape = shapeDef;
@@ -21,13 +29,6 @@ var Zombie = Class.create(Entity, {
 		var shapeDef = new b2PolygonShape();
 		shapeDef = new b2CircleShape(pixelInMeter(6));
 		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(35)));
-		fixtureDef.shape = shapeDef;
-		this.body.CreateFixture(fixtureDef);
-		
-		// circle bottom shape definition
-		var shapeDef = new b2PolygonShape();
-		shapeDef = new b2CircleShape(pixelInMeter(6));
-		shapeDef.SetLocalPosition(new b2Vec2(0, pixelInMeter(-20)));
 		fixtureDef.shape = shapeDef;
 		this.body.CreateFixture(fixtureDef);
 		
